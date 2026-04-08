@@ -25,7 +25,12 @@ app.get("/api/heartbeat/latest",(req,res) => {
     res.json(heartRates[heartRates.length - 1]); 
 })
 
+app.post("/api/heartbeat", (req,res)=>{
 
+    const heartRate = req.body;
+    heartRates.push(heartRate);
+    return res.status(201).json({ message: "Battito aggiunto", data: heartRate });
+})
 
 
 
