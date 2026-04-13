@@ -46,6 +46,7 @@ CREATE TABLE Emergenze(
     cf_paziente int NOT NULL,
     id_misurazione int NOT NULL,
     data_ora datetime,
+    id_battito int NOT NULL,
     
     FOREIGN KEY (cf_paziente) REFERENCES Paziente(cf_paziente),
     FOREIGN KEY (id_battito) REFERENCES Battito(id_battito)
