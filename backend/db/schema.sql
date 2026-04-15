@@ -1,25 +1,21 @@
-DROP DATABASE if exists GIGABEAT;
-
+sqlDROP DATABASE if exists GIGABEAT;
 CREATE DATABASE if not exists GIGABEAT;
 USE GIGABEAT;
-
 CREATE TABLE Paziente(
 	cf_paziente varchar(16) PRIMARY KEY,
     nome varchar(100) NOT NULL,
     cognome varchar(100) NOT NULL,
     citta varchar(100) NOT NULL,
     data_nascita date NOT NULL,
-    telefono int CHECK(telefono = 10),
-    contatto_emergenza int CHECK(telefono = 10)
+    telefono varchar(10),
+    contatto_emergenza varchar(10)
 );
-
 CREATE TABLE Sensore(
 	id_sensore int PRIMARY KEY,
     cf_paziente varchar(16) NOT NULL,
     
     FOREIGN KEY (cf_paziente) REFERENCES Paziente(cf_paziente)
 );
-
 CREATE TABLE Battito(
 	id_battito int PRIMARY KEY,
     id_sensore int NOT NULL,
@@ -29,7 +25,6 @@ CREATE TABLE Battito(
     
     FOREIGN KEY (id_sensore) REFERENCES Sensore(id_sensore)
 );
-
 CREATE TABLE Posizione(
 	id_posizione int PRIMARY KEY,
     cf_paziente varchar(16) NOT NULL,
@@ -39,8 +34,6 @@ CREATE TABLE Posizione(
     
     FOREIGN KEY (cf_paziente) REFERENCES Paziente(cf_paziente)
 );
-
-
 CREATE TABLE Emergenze(
 	id_emergenza int PRIMARY KEY,
     cf_paziente varchar(16) NOT NULL,
