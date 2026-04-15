@@ -23,8 +23,8 @@ CREATE TABLE Sensore(
 CREATE TABLE Battito(
 	id_battito int PRIMARY KEY,
     id_sensore int NOT NULL,
-    battiti int NOT NULL,
-    data_ora datetime NOT NULL,
+    bpm int NOT NULL,
+    timestamp datetime NOT NULL,
     irregolare boolean,
     
     FOREIGN KEY (id_sensore) REFERENCES Sensore(id_sensore)
