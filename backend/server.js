@@ -22,3 +22,4 @@ app.use('/api/heartbeat', heartRateRouter);
 app.listen(PORT, () => {
     console.log("GIGABEAT online su http://localhost:" + PORT);
 });
+
