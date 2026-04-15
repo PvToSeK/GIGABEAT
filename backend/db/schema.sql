@@ -4,7 +4,7 @@ CREATE DATABASE if not exists GIGABEAT;
 USE GIGABEAT;
 
 CREATE TABLE Paziente(
-	cf_paziente int PRIMARY KEY,
+	cf_paziente varchar(16) PRIMARY KEY,
     nome varchar(100) NOT NULL,
     cognome varchar(100) NOT NULL,
     citta varchar(100) NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE Paziente(
 
 CREATE TABLE Sensore(
 	id_sensore int PRIMARY KEY,
-    cf_paziente int NOT NULL,
+    cf_paziente varchar(16) NOT NULL,
     
     FOREIGN KEY (cf_paziente) REFERENCES Paziente(cf_paziente)
 );
@@ -32,7 +32,7 @@ CREATE TABLE Battito(
 
 CREATE TABLE Posizione(
 	id_posizione int PRIMARY KEY,
-    cf_paziente int NOT NULL,
+    cf_paziente varchar(16) NOT NULL,
     latitudine decimal(9, 6) NOT NULL,
     longitudine decimal(9, 6) NOT NULL,
     data_ora datetime NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE Posizione(
 
 CREATE TABLE Emergenze(
 	id_emergenza int PRIMARY KEY,
-    cf_paziente int NOT NULL,
+    cf_paziente varchar(16) NOT NULL,
     id_misurazione int NOT NULL,
     data_ora datetime,
     id_battito int NOT NULL,
