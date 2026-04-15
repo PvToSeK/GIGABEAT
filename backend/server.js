@@ -1,12 +1,8 @@
 const express = require('express');
-const PORT = 6767;
+const db = require('./db/database');
+const PORT = process.env.PORT || 6767;
 const cors = require('cors');
 const app = express();
-const heartRates = [
-    { patient_id: 1, bpm: 72, timestamp: "2026-01-28T10:00:00" },
-    { patient_id: 2, bpm: 75, timestamp: "2026-01-28T10:01:00" },
-    { patient_id: 3, bpm: 68, timestamp: "2026-01-28T10:00:30" }
-];
 app.use(cors());
 app.use(express.json());
 
@@ -19,23 +15,29 @@ app.use((req,res,next)=>{
 
 
 app.get("/api/heartbeat/all",(req,res) => {
-    res.json(heartRates); 
+db.query("SELECT * FROM Battito", (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+});
 })
-app.get("/api/heartbeat/latest",(req,res) => {
-    res.json(heartRates[heartRates.length - 1]); 
-})
+app.get("/api/heartbeat/latest", (req, res) => {
+    db.query("SELECT * FROM Battito ORDER BY timestamp DESC LIMIT 1", (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results[0]);
+    });
+});
 
-app.post("/api/heartbeat", (req,res)=>{
-
-    const heartRate = req.body;
-    heartRates.push(heartRate);
-    return res.status(201).json({ message: "Battito aggiunto", data: heartRate });
-})
-
-
-
-
-
+app.post("/api/heartbeat", (req, res) => {
+    const { id_sensore, bpm, timestamp, irregolare } = req.body;
+    db.query(
+        "INSERT INTO Battito (id_sensore, bpm, timestamp, irregolare) VALUES (?, ?, ?, ?)",
+        [id_sensore, bpm, timestamp, irregolare],
+        (err, results) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.status(201).json({ message: "Battito aggiunto", id: results.insertId });
+        }
+    );
+});
 
 
 
