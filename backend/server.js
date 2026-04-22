@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const heartRateRouter = require('./routes/heartRate.routers');
 
-const PORT = process.env.PORT || 6767;
+const PORT = process.env.PORT;
 const app = express();
 
 app.use(cors());
