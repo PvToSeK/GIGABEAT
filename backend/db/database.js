@@ -21,14 +21,20 @@ module.exports = connection;
 */
 const mysql = require('mysql2');
 
-const connection = mysql.createConnection(process.env.MYSQL_URL);
-
-connection.connect((err) => {
-    if (err) {
-        console.error('Errore connessione database:', err);
-        return;
-    }
-    console.log('Database connesso!');
+const pool = mysql.createPool({
+    connectionLimit: 10,
+    waitForConnections: true,
+    queueLimit: 0,
+    uri: process.env.MYSQL_URL || 'mysql://root@localhost/test'
 });
 
-module.exports = connection;
+pool.getConnection((err, conn) => {
+    if (err) {
+        console.error('Errore connessione pool:', err);
+        process.exit(1);
+    }
+    console.log('Database pool connesso!');
+    conn.release();
+});
+
+module.exports = pool;
