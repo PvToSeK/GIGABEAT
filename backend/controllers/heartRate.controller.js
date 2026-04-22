@@ -30,8 +30,13 @@ module.exports = { getAllHeartRates, getLatestHeartRate, addHeartRate };*/
 const db = require('../db/database');
 
 const getAllHeartRates = (req, res) => {
+    console.log('📥 GET /all richiesto');
     db.query("SELECT * FROM Battito", (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+            console.error('❌ Errore query:', err.message, err.code);
+            return res.status(500).json({ error: err.message });
+        }
+        console.log('✅ Query OK');
         res.json(results);
     });
 };
