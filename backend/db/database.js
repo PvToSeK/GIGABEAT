@@ -25,7 +25,7 @@ const pool = mysql.createPool({
     connectionLimit: 10,
     waitForConnections: true,
     queueLimit: 0,
-    uri: process.env.MYSQL_URL || 'mysql://root@localhost/test'
+    uri: process.env.MYSQL_URL
 });
 
 pool.getConnection((err, conn) => {
@@ -37,4 +37,5 @@ pool.getConnection((err, conn) => {
     conn.release();
 });
 
-module.exports = pool;
+
+module.exports = pool.promise();
