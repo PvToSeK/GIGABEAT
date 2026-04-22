@@ -26,9 +26,17 @@ const connection = mysql.createConnection(process.env.MYSQL_URL);
 connection.connect((err) => {
     if (err) {
         console.error('Errore connessione database:', err);
-        return;
+        process.exit(1);
     }
     console.log('Database connesso!');
+});
+
+connection.on('error', (err) => {
+    console.error('❌ Errore database:', err);
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+        console.log('Riconnessione in corso...');
+        connection.connect();
+    }
 });
 
 module.exports = connection;
