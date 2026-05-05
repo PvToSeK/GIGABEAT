@@ -35,3 +35,57 @@ const pool = mysql.createPool({
 });
 
 module.exports = pool;
+
+/*const db = require('../db/database');
+
+const getAllHeartRates = async (req, res) => {
+    try {
+        console.log('📥 GET /all richiesto');
+        const [results] = await db.query("SELECT * FROM Battito ORDER BY timestamp DESC");
+        console.log('✅ Query OK - Trovati ' + results.length + ' battiti');
+        res.json(results);
+    } catch (err) {
+        console.error('❌ Errore query:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const getLatestHeartRate = async (req, res) => {
+    try {
+        const [results] = await db.query(
+            "SELECT * FROM Battito ORDER BY timestamp DESC LIMIT 1"
+        );
+        if (results.length === 0) {
+            return res.status(404).json({ error: "Nessun battito trovato" });
+        }
+        res.json(results[0]);
+    } catch (err) {
+        console.error('❌ Errore:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const addHeartRate = async (req, res) => {
+    try {
+        const { id_sensore, bpm, timestamp, irregolare } = req.body;
+        
+        if (!id_sensore || !bpm) {
+            return res.status(400).json({ error: "Campi obbligatori mancanti" });
+        }
+
+        const [results] = await db.query(
+            "INSERT INTO Battito (id_sensore, bpm, timestamp, irregolare) VALUES (?, ?, ?, ?)",
+            [id_sensore, bpm, timestamp || new Date(), irregolare || false]
+        );
+        
+        res.status(201).json({ 
+            message: "Battito aggiunto", 
+            id: results.insertId 
+        });
+    } catch (err) {
+        console.error('❌ Errore INSERT:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+module.exports = { getAllHeartRates, getLatestHeartRate, addHeartRate };*/
