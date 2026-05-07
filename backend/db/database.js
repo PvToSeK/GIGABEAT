@@ -21,16 +21,19 @@ module.exports = connection;
 */
 const mysql = require('mysql2/promise');
 
+console.log("DB INIT START");
+
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: Number(process.env.DB_PORT)
+    port: process.env.DB_PORT
 });
 
-module.exports = pool;
+console.log("DB INIT DONE");
 
+module.exports = pool;
 /*const db = require('../db/database');
 
 const getAllHeartRates = async (req, res) => {
