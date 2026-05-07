@@ -17,7 +17,7 @@ app.get("/", (req, res) => {
     res.send("GIGABEAT backend online");
 });
 
-app.use('/api/heartbeat', heartRateRouter);
+//app.use('/api/heartbeat', heartRateRouter);
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log("GIGABEAT online su porta " + PORT);
