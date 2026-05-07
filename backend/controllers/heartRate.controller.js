@@ -5,6 +5,7 @@ const getAllHeartRates = async (req, res) => {
         const [results] = await db.query("SELECT * FROM Battito");
         res.json(results);
     } catch (err) {
+        console.log(err);
         res.status(500).json({ error: err.message });
     }
 };
@@ -12,10 +13,17 @@ const getAllHeartRates = async (req, res) => {
 const getLatestHeartRate = async (req, res) => {
     try {
         const [results] = await db.query(
-            "SELECT * FROM Battito ORDER BY timestamp DESC LIMIT 1"
+            "SELECT * FROM Battito ORDER BY `timestamp` DESC LIMIT 1"
         );
+
+        if (!results.length) {
+            return res.status(404).json({ error: "Nessun battito trovato" });
+        }
+
         res.json(results[0]);
+
     } catch (err) {
+        console.log(err);
         res.status(500).json({ error: err.message });
     }
 };
@@ -25,7 +33,7 @@ const addHeartRate = async (req, res) => {
         const { id_sensore, bpm, timestamp, irregolare } = req.body;
 
         const [result] = await db.query(
-            "INSERT INTO Battito (id_sensore, bpm, timestamp, irregolare) VALUES (?, ?, ?, ?)",
+            "INSERT INTO Battito (id_sensore, bpm, `timestamp`, irregolare) VALUES (?, ?, ?, ?)",
             [id_sensore, bpm, timestamp, irregolare]
         );
 
@@ -35,6 +43,7 @@ const addHeartRate = async (req, res) => {
         });
 
     } catch (err) {
+        console.log(err);
         res.status(500).json({ error: err.message });
     }
 };
