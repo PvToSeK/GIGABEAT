@@ -4,7 +4,7 @@ const express = require('express');
 const cors = require('cors');
 
 const heartRateRouter = require('./routes/heartRate.routers');
-
+const patientRouter = require('./routes/patient.routers');
 const app = express();
 
 app.use(cors());
@@ -28,7 +28,8 @@ app.get("/ping", (req, res) => {
 
 // 🔥 ROUTES HEARTBEAT (QUESTA È LA CHIAVE)
 app.use('/api/heartbeat', heartRateRouter);
-
+// 🔥 ROUTES PAZIENTI (QUESTA È LA CHIAVE)
+app.use('/api/patients', patientRouter);
 // PORT RAILWAY
 const PORT = process.env.PORT;
 
