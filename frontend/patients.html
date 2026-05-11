@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GigaBeat — Pazienti</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <header class="topbar">
+    <div class="topbar-logo"><span class="pulse-dot"></span>GIGABEAT</div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-time" id="clock">—</div>
+  </header>
+
+  <nav class="sidebar">
+    <span class="nav-section-label">Monitoraggio</span>
+    <a class="nav-link" href="index.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-link" href="heartbeat.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Monitor Battito
+    </a>
+    <span class="nav-section-label">Pazienti</span>
+    <a class="nav-link active" href="patients.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Lista Pazienti
+    </a>
+    <a class="nav-link" href="emergency.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Emergenze
+    </a>
+    <a class="nav-link" href="map.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+      Posizione GPS
+    </a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <h1>Lista Pazienti</h1>
+      <p>Totale: <strong id="patients-count">—</strong> pazienti registrati</p>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-bar">
+      <input
+        class="input-field"
+        type="text"
+        id="search-cf"
+        placeholder="Cerca per Codice Fiscale o nome..."
+        autocomplete="off"
+      />
+      <button class="btn" id="search-btn">Cerca</button>
+    </div>
+
+    <!-- TABLE -->
+    <div id="patients-section">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Codice Fiscale</th>
+              <th>Nome</th>
+              <th>Età</th>
+              <th>Sesso</th>
+              <th>Stato</th>
+              <th>Azioni</th>
+            </tr>
+          </thead>
+          <tbody id="patients-body">
+            <tr><td colspan="6"><div class="loader"><div class="spinner"></div>Caricamento pazienti...</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/patients.js"></script>
+</body>
+</html>

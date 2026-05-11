@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GigaBeat — Posizione GPS</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Leaflet — zero API key, open source -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    #map {
+      height: 480px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      margin-top: 4px;
+      overflow: hidden;
+    }
+
+    /* ── Dark tile filter ─────────────────────────────── */
+    .leaflet-tile-pane {
+      filter: invert(1) hue-rotate(180deg) brightness(.75) contrast(1.15) saturate(.8);
+    }
+    .leaflet-container { background: var(--bg) !important; }
+
+    /* ── Popup dark ───────────────────────────────────── */
+    .leaflet-popup-content-wrapper {
+      background: var(--card) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: var(--radius) !important;
+      box-shadow: 0 8px 28px rgba(0,0,0,.55) !important;
+      color: var(--text) !important;
+      padding: 0 !important;
+    }
+    .leaflet-popup-content { margin: 0 !important; }
+    .leaflet-popup-tip-container { display: none; }
+    .leaflet-popup-close-button {
+      color: var(--text-sub) !important;
+      font-size: 18px !important;
+      top: 6px !important; right: 8px !important;
+    }
+    .leaflet-popup-close-button:hover { color: var(--text) !important; }
+
+    /* ── Marker pulsante ──────────────────────────────── */
+    .pulse-marker {
+      width: 20px; height: 20px;
+      background: var(--green);
+      border: 3px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(0,229,176,.6);
+      animation: markerPulse 2s ease-out infinite;
+    }
+    @keyframes markerPulse {
+      0%   { box-shadow: 0 0 0 0   rgba(0,229,176,.6); }
+      70%  { box-shadow: 0 0 0 14px rgba(0,229,176,.0); }
+      100% { box-shadow: 0 0 0 0   rgba(0,229,176,.0); }
+    }
+
+    /* ── Popup contenuto ──────────────────────────────── */
+    .map-popup {
+      font-family: 'DM Mono', monospace;
+      padding: 14px 16px;
+      min-width: 200px;
+      font-size: 13px;
+    }
+    .map-popup .popup-cf   { color: var(--green); font-size: 15px; font-weight: 500; margin-bottom: 10px; }
+    .map-popup .popup-row  { color: var(--text-sub); font-size: 11px; margin-top: 5px; letter-spacing: .04em; }
+    .map-popup .popup-val  { color: var(--text); }
+    .map-popup .popup-link { color: var(--green); font-size: 11px; display: block; margin-top: 12px; }
+    .map-popup .popup-link:hover { text-decoration: underline; }
+
+    /* ── Attribution dark ─────────────────────────────── */
+    .leaflet-control-attribution {
+      background: rgba(8,12,24,.85) !important;
+      color: var(--text-dim) !important;
+      font-size: 10px !important;
+    }
+    .leaflet-control-attribution a { color: var(--text-sub) !important; }
+    .leaflet-control-zoom a {
+      background: var(--card) !important;
+      color: var(--text-sub) !important;
+      border-color: var(--border) !important;
+    }
+    .leaflet-control-zoom a:hover {
+      background: var(--surface) !important;
+      color: var(--green) !important;
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-logo"><span class="pulse-dot"></span>GIGABEAT</div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-time" id="clock">—</div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <span class="nav-section-label">Monitoraggio</span>
+    <a class="nav-link" href="index.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-link" href="heartbeat.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Monitor Battito
+    </a>
+    <span class="nav-section-label">Pazienti</span>
+    <a class="nav-link" href="patients.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Lista Pazienti
+    </a>
+    <a class="nav-link" href="emergency.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+      Emergenze
+    </a>
+    <a class="nav-link active" href="map.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+      Posizione GPS
+    </a>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="page-header">
+      <h1>📍 Posizione GPS</h1>
+      <p>
+        Localizzazione paziente in tempo reale
+        <span class="refresh-tag">
+          <span class="refresh-dot"></span>
+          Aggiornamento ogni 2s &mdash; <span id="last-refresh">—</span>
+        </span>
+      </p>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-bar">
+      <input class="input-field" type="text" id="search-cf"
+        placeholder="Inserisci Codice Fiscale paziente..." autocomplete="off"/>
+      <button class="btn" id="locate-btn">▶ Localizza</button>
+      <button class="btn" id="stop-btn"
+        style="display:none;background:var(--red-dim);border-color:var(--red);color:var(--red)">
+        ⏹ Stop
+      </button>
+    </div>
+
+    <!-- ERRORE / INFO -->
+    <div id="position-info"></div>
+
+    <!-- STRIP COORDINATE -->
+    <div id="position-stats" style="display:none;margin-bottom:14px">
+      <div class="card" style="padding:14px 20px">
+        <div style="display:flex;gap:32px;flex-wrap:wrap;align-items:center">
+          <div>
+            <div class="stat-label" style="font-size:9px;margin-bottom:4px">LATITUDINE</div>
+            <div class="mono" id="stat-lat" style="color:var(--green);font-size:15px">—</div>
+          </div>
+          <div>
+            <div class="stat-label" style="font-size:9px;margin-bottom:4px">LONGITUDINE</div>
+            <div class="mono" id="stat-lng" style="color:var(--green);font-size:15px">—</div>
+          </div>
+          <div>
+            <div class="stat-label" style="font-size:9px;margin-bottom:4px">PRECISIONE</div>
+            <div class="mono" id="stat-acc" style="font-size:15px;color:var(--text-sub)">—</div>
+          </div>
+          <div>
+            <div class="stat-label" style="font-size:9px;margin-bottom:4px">RILEVATO IL</div>
+            <div class="mono" id="stat-ts" style="font-size:12px;color:var(--text-sub)">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAPPA -->
+    <div id="map"></div>
+
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const REFRESH_MS = 2000;
+
+let lmap       = null;   // istanza Leaflet
+let marker     = null;   // marker corrente
+let popup      = null;   // popup aperto
+let trackLoop  = null;   // handle setInterval
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  startClock(document.getElementById('clock'));
+  initMap();
+
+  document.getElementById('locate-btn').addEventListener('click', startTracking);
+  document.getElementById('stop-btn').addEventListener('click', stopTracking);
+  document.getElementById('search-cf').addEventListener('keydown', e => {
+    if (e.key === 'Enter') startTracking();
+  });
+
+  // CF passato via URL (es. da patient.html → "Vedi posizione")
+  const cf = new URLSearchParams(location.search).get('cf');
+  if (cf) {
+    document.getElementById('search-cf').value = cf;
+    startTracking();
+  }
+});
+
+// ── MAPPA ────────────────────────────────────────────────────────────────────
+function initMap() {
+  // Centro di default: Italia
+  lmap = L.map('map', { zoomControl: true }).setView([41.9, 12.5], 6);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19
+  }).addTo(lmap);
+}
+
+// ── TRACKING ─────────────────────────────────────────────────────────────────
+async function startTracking() {
+  const cf = document.getElementById('search-cf').value.trim().toUpperCase();
+  if (!cf) return;
+
+  stopTracking(/* keepUI= */ false);
+
+  document.getElementById('locate-btn').style.display = 'none';
+  document.getElementById('stop-btn').style.display   = 'inline-flex';
+
+  await tick(cf);
+  trackLoop = setInterval(() => tick(cf), REFRESH_MS);
+}
+
+function stopTracking(keepUI = true) {
+  clearInterval(trackLoop);
+  trackLoop = null;
+  if (!keepUI) return;
+  document.getElementById('locate-btn').style.display = 'inline-flex';
+  document.getElementById('stop-btn').style.display   = 'none';
+}
+
+// ── SINGOLO TICK ─────────────────────────────────────────────────────────────
+async function tick(cf) {
+  const infoEl = document.getElementById('position-info');
+  const lastEl = document.getElementById('last-refresh');
+  if (lastEl) lastEl.textContent = new Date().toLocaleTimeString('it-IT');
+
+  try {
+    const data = await API.positions.latest(cf);
+
+    // Adatta ai campi reali della tua API GPS
+    const lat = parseFloat(data.lat ?? data.latitude  ?? data.latitudine);
+    const lng = parseFloat(data.lng ?? data.longitude ?? data.longitudine ?? data.lon);
+    const ts  = data.timestamp ?? data.created_at ?? data.time ?? null;
+    const acc = data.accuracy  ?? data.accuratezza ?? null;
+
+    if (isNaN(lat) || isNaN(lng)) throw new Error('Coordinate GPS assenti nella risposta API');
+
+    // Aggiorna strip
+    document.getElementById('position-stats').style.display = 'block';
+    setText('stat-lat', lat.toFixed(6) + '°');
+    setText('stat-lng', lng.toFixed(6) + '°');
+    setText('stat-acc', acc ? acc + 'm' : '—');
+    setText('stat-ts',  formatTimestamp(ts));
+
+    placeOrMoveMarker(lat, lng, cf, ts, acc);
+    if (infoEl) infoEl.innerHTML = '';
+
+  } catch (err) {
+    stopTracking();
+    if (infoEl) infoEl.innerHTML = `<div class="error-box">⚠ ${err.message}</div>`;
+    setText('stat-lat','—'); setText('stat-lng','—');
+  }
+}
+
+// ── MARKER ───────────────────────────────────────────────────────────────────
+const pulseIcon = L.divIcon({
+  html: '<div class="pulse-marker"></div>',
+  iconSize:   [20, 20],
+  iconAnchor: [10, 10],
+  popupAnchor:[0, -14],
+  className:  '',
+});
+
+function placeOrMoveMarker(lat, lng, cf, ts, acc) {
+  const pos = [lat, lng];
+
+  if (!marker) {
+    marker = L.marker(pos, { icon: pulseIcon }).addTo(lmap);
+    popup  = L.popup({ closeButton: true, autoClose: false, closeOnClick: false })
+               .setContent(buildPopup(cf, lat, lng, ts, acc));
+    marker.bindPopup(popup).openPopup();
+  } else {
+    marker.setLatLng(pos);
+    if (popup) popup.setContent(buildPopup(cf, lat, lng, ts, acc));
+  }
+
+  // Segui il marker solo se la mappa è allo stesso zoom (no salti se l'utente sta zoomando)
+  lmap.panTo(pos, { animate: true, duration: 0.5 });
+}
+
+function buildPopup(cf, lat, lng, ts, acc) {
+  return `
+    <div class="map-popup">
+      <div class="popup-cf">👤 ${cf}</div>
+      <div class="popup-row">Latitudine &nbsp;<span class="popup-val">${lat.toFixed(6)}°</span></div>
+      <div class="popup-row">Longitudine <span class="popup-val">${lng.toFixed(6)}°</span></div>
+      ${acc ? `<div class="popup-row">Precisione &nbsp;<span class="popup-val">${acc}m</span></div>` : ''}
+      ${ts  ? `<div class="popup-row" style="margin-top:6px">${formatTimestamp(ts)}</div>` : ''}
+      <a class="popup-link" href="patient.html?cf=${encodeURIComponent(cf)}">
+        Vai al profilo paziente →
+      </a>
+    </div>`;
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+</script>
+</body>
+</html>
