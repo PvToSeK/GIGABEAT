@@ -24,25 +24,17 @@
   <nav class="sidebar">
     <span class="nav-section-label">Monitoraggio</span>
     <a class="nav-link active" href="index.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
       Dashboard
     </a>
     <a class="nav-link" href="heartbeat.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Monitor Battito
-    </a>
-    <span class="nav-section-label">Pazienti</span>
-    <a class="nav-link" href="patients.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Lista Pazienti
-    </a>
-    <a class="nav-link" href="emergency.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      Emergenze
-    </a>
-    <a class="nav-link" href="map.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
-      Posizione GPS
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+      Storico Battiti
     </a>
   </nav>
 
@@ -51,7 +43,7 @@
     <div class="page-header">
       <h1>Dashboard</h1>
       <p>
-        Panoramica sistema di monitoraggio IoT
+        Il tuo monitoraggio cardiaco in tempo reale
         <span class="refresh-tag">
           <span class="refresh-dot"></span>
           Aggiornato alle <span id="last-refresh">—</span>
@@ -60,12 +52,12 @@
     </div>
 
     <!-- STAT CARDS -->
-    <div class="stats-grid">
+    <div class="stats-grid" style="margin-bottom:24px">
 
       <div class="stat-card" id="card-bpm">
-        <div class="stat-label">Ultimo BPM</div>
+        <div class="stat-label">BPM Attuale</div>
         <div class="stat-value bpm-ok" id="stat-bpm">—</div>
-        <div class="stat-meta">Paziente: <span id="stat-cf" style="font-family:var(--mono)">—</span></div>
+        <div class="stat-meta" id="stat-sensor" style="font-family:var(--mono);font-size:12px">—</div>
       </div>
 
       <div class="stat-card">
@@ -73,69 +65,25 @@
         <div style="margin-top:10px" id="stat-status">
           <span class="badge badge-blue">In attesa...</span>
         </div>
-        <div class="stat-meta" style="margin-top:8px">
-          Rilevato: <span id="stat-time" style="font-size:11px;font-family:var(--mono)">—</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-label">Pazienti totali</div>
-        <div class="stat-value" id="stat-patients">—</div>
-        <div class="stat-meta">
-          <a href="patients.html" style="color:var(--green);font-size:12px">Visualizza lista →</a>
-        </div>
-      </div>
-
-      <div class="stat-card danger">
-        <div class="stat-label">Emergenze attive</div>
-        <div class="stat-value" id="stat-emergency" style="color:var(--red)">—</div>
-        <div class="stat-meta">
-          <a href="emergency.html" style="color:var(--red);font-size:12px">Visualizza →</a>
+        <div class="stat-meta" style="margin-top:8px;font-size:11px">
+          <span id="stat-time" style="font-family:var(--mono)">—</span>
         </div>
       </div>
 
     </div>
 
-    <!-- GRID: CHART + RECENT PATIENTS -->
-    <div class="grid-2" style="margin-bottom:24px">
-
-      <!-- BPM CHART -->
-      <div class="card">
-        <div class="card-title">
-          Andamento BPM (in tempo reale)
-          <span class="refresh-tag" style="margin-left:auto">
-            <span class="refresh-dot"></span> live
-          </span>
-        </div>
-        <div class="ecg-line"></div>
-        <div class="chart-wrap">
-          <canvas id="bpm-chart"></canvas>
-        </div>
+    <!-- GRAFICO BPM -->
+    <div class="card">
+      <div class="card-title">
+        Andamento BPM
+        <span class="refresh-tag" style="margin-left:auto">
+          <span class="refresh-dot"></span> live · ultimi 30 battiti
+        </span>
       </div>
-
-      <!-- RECENT PATIENTS -->
-      <div class="card">
-        <div class="card-title">Pazienti recenti</div>
-        <div class="table-wrap" style="border-radius:8px">
-          <table>
-            <thead>
-              <tr>
-                <th>CF</th>
-                <th>Nome</th>
-                <th>Età</th>
-                <th>Stato</th>
-              </tr>
-            </thead>
-            <tbody id="recent-patients-body">
-              <tr><td colspan="4"><div class="loader"><div class="spinner"></div>Caricamento...</div></td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div style="margin-top:14px">
-          <a href="patients.html" class="btn" style="display:inline-block">Tutti i pazienti →</a>
-        </div>
+      <div class="ecg-line"></div>
+      <div class="chart-wrap">
+        <canvas id="bpm-chart"></canvas>
       </div>
-
     </div>
 
   </main>
