@@ -9,34 +9,51 @@ const patientRouter = require('./routes/patient.routers');
 
 const app = express();
 
+// middleware base
 app.use(cors());
 app.use(express.json());
 
-// FILE STATICI FRONTEND
-app.use(express.static(path.join(__dirname, '../frontend')));
-
-// LOG
+// LOG richieste
 app.use((req, res, next) => {
     console.log(`${req.method} ${req.url}`);
     next();
 });
 
-// ROOT FRONTEND
+
+// ======================
+// 🔥 FRONTEND STATICO
+// ======================
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+
+// ======================
+// 🏠 ROOT → index.html
+// ======================
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// HEALTH CHECK
+
+// ======================
+// ❤️ API ROUTES
+// ======================
+app.use('/api/heartbeat', heartRateRouter);
+app.use('/api/patients', patientRouter);
+
+
+// ======================
+// 🩺 HEALTH CHECK
+// ======================
 app.get("/ping", (req, res) => {
     res.json({ ok: true });
 });
 
-// API
-app.use('/api/heartbeat', heartRateRouter);
-app.use('/api/patients', patientRouter);
 
-const PORT = process.env.PORT;
+// ======================
+// 🚀 START SERVER
+// ======================
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log("Server running on", PORT);
+    console.log("GIGABEAT backend running on port", PORT);
 });
