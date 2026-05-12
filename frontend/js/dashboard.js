@@ -95,22 +95,22 @@ function initChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#0d1526',
-          borderColor: '#1c2d52',
+          backgroundColor: '#ffffff',
+          borderColor: '#dde3ec',
           borderWidth: 1,
-          titleColor: '#5a7ab5',
-          bodyColor: '#dce8ff',
+          titleColor: '#5a6a82',
+          bodyColor: '#1a2233',
         }
       },
       scales: {
         x: {
-          ticks: { color: '#5a7ab5', font: { family: 'DM Mono', size: 10 }, maxTicksLimit: 8 },
-          grid:  { color: '#1c2d52' }
+          ticks: { color: '#5a6a82', font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 8 },
+          grid:  { color: '#dde3ec' }
         },
         y: {
           min: 30, max: 170,
-          ticks: { color: '#5a7ab5', font: { family: 'DM Mono', size: 10 } },
-          grid:  { color: '#1c2d52' }
+          ticks: { color: '#5a6a82', font: { family: 'JetBrains Mono', size: 10 } },
+          grid:  { color: '#dde3ec' }
         }
       }
     }
