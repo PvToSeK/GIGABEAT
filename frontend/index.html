@@ -10,17 +10,17 @@
 <body>
 <div class="layout">
 
-  <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-logo">
-      <span class="pulse-dot"></span>
-      GIGABEAT
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+      GigaBeat
     </div>
     <div class="topbar-spacer"></div>
     <div class="topbar-time" id="clock">—</div>
   </header>
 
-  <!-- SIDEBAR -->
   <nav class="sidebar">
     <span class="nav-section-label">Monitoraggio</span>
     <a class="nav-link active" href="index.html">
@@ -38,12 +38,12 @@
     </a>
   </nav>
 
-  <!-- MAIN -->
   <main class="main">
+
     <div class="page-header">
       <h1>Dashboard</h1>
       <p>
-        Il tuo monitoraggio cardiaco in tempo reale
+        Monitoraggio cardiaco in tempo reale
         <span class="refresh-tag">
           <span class="refresh-dot"></span>
           Aggiornato alle <span id="last-refresh">—</span>
@@ -51,36 +51,30 @@
       </p>
     </div>
 
-    <!-- STAT CARDS -->
-    <div class="stats-grid" style="margin-bottom:24px">
-
+    <div class="stats-grid">
       <div class="stat-card" id="card-bpm">
         <div class="stat-label">BPM Attuale</div>
-        <div class="stat-value bpm-ok" id="stat-bpm">—</div>
-        <div class="stat-meta" id="stat-sensor" style="font-family:var(--mono);font-size:12px">—</div>
+        <div class="stat-value" id="stat-bpm">—</div>
+        <div class="stat-meta" id="stat-sensor">—</div>
       </div>
-
       <div class="stat-card">
         <div class="stat-label">Stato</div>
         <div style="margin-top:10px" id="stat-status">
           <span class="badge badge-blue">In attesa...</span>
         </div>
-        <div class="stat-meta" style="margin-top:8px;font-size:11px">
-          <span id="stat-time" style="font-family:var(--mono)">—</span>
+        <div class="stat-meta" style="margin-top:8px">
+          <span id="stat-time" style="font-family:var(--mono);font-size:11px">—</span>
         </div>
       </div>
-
     </div>
 
-    <!-- GRAFICO BPM -->
     <div class="card">
       <div class="card-title">
         Andamento BPM
-        <span class="refresh-tag" style="margin-left:auto">
-          <span class="refresh-dot"></span> live · ultimi 30 battiti
+        <span class="refresh-tag" style="margin-left:auto;font-size:11px">
+          <span class="refresh-dot"></span> live · ultimi 30 campioni
         </span>
       </div>
-      <div class="ecg-line"></div>
       <div class="chart-wrap">
         <canvas id="bpm-chart"></canvas>
       </div>
