@@ -2,23 +2,28 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const heartRateRouter = require('./routes/heartRate.routers');
 const patientRouter = require('./routes/patient.routers');
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// LOG richieste
+// FILE STATICI FRONTEND
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+// LOG
 app.use((req, res, next) => {
     console.log(`${req.method} ${req.url}`);
     next();
 });
 
-// ROOT
+// ROOT FRONTEND
 app.get("/", (req, res) => {
-    res.send("GIGABEAT backend online 🚀");
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 // HEALTH CHECK
@@ -26,11 +31,10 @@ app.get("/ping", (req, res) => {
     res.json({ ok: true });
 });
 
-// 🔥 ROUTES HEARTBEAT (QUESTA È LA CHIAVE)
+// API
 app.use('/api/heartbeat', heartRateRouter);
-// 🔥 ROUTES PAZIENTI (QUESTA È LA CHIAVE)
 app.use('/api/patients', patientRouter);
-// PORT RAILWAY
+
 const PORT = process.env.PORT;
 
 app.listen(PORT, '0.0.0.0', () => {
