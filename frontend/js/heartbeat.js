@@ -1,15 +1,13 @@
-// ─── heartbeat.js — storico personale ────────────────────────────────────────
-// /heartbeat/all non è più disponibile.
-// Accumuliamo le letture in memoria pollingando /latest ogni 2s.
-// Vengono registrati solo i battiti con id_battito diverso dall'ultimo.
+// ─── heartbeat.js ─────────────────────────────────────────────────────────────
+// Accumula battiti in memoria pollingando /latest ogni 2s.
+// Aggiunge un nuovo record solo quando id_battito cambia.
 
 const REFRESH_MS  = 2000;
-const MAX_RECORDS = 100; // massimo righe in tabella
+const MAX_RECORDS = 100;
 
-let readings = []; // array crescente di normalizeHeartbeat()
+let readings = [];
 let lastId   = null;
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   startClock(document.getElementById('clock'));
   tick();
@@ -18,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── POLLING ───────────────────────────────────────────────────────────────────
 async function tick() {
+  // Aggiorna SEMPRE il timestamp — fuori dal try, fuori da qualsiasi guard
   const lastEl = document.getElementById('last-refresh');
   if (lastEl) lastEl.textContent = new Date().toLocaleTimeString('it-IT');
 
@@ -25,18 +24,19 @@ async function tick() {
     const raw = await API.heartbeat.latest();
     const hb  = normalizeHeartbeat(raw);
 
-    // Aggiungi solo se battito nuovo
+    // Battito già registrato → nessuna nuova riga, ma il clock ha già aggiornato
     if (hb.id !== null && hb.id === lastId) return;
     lastId = hb.id;
 
-    readings.unshift(hb); // più recente in cima
+    readings.unshift(hb);                          // più recente in cima
     if (readings.length > MAX_RECORDS) readings.pop();
 
     renderSummary();
     renderTable();
 
   } catch (e) {
-    renderError(document.getElementById('hb-error'), e.message);
+    const errEl = document.getElementById('hb-error');
+    renderError(errEl, e.message);
   }
 }
 
@@ -50,11 +50,11 @@ function renderSummary() {
     ? Math.round(bpms.reduce((a, b) => a + b, 0) / bpms.length)
     : 0;
 
-  setText('hb-total',  readings.length);
-  setText('hb-high',   high);
-  setText('hb-low',    low);
-  setText('hb-irreg',  irreg);
-  setText('hb-avg',    avg ? avg + ' BPM' : '—');
+  setText('hb-total', readings.length);
+  setText('hb-high',  high);
+  setText('hb-low',   low);
+  setText('hb-irreg', irreg);
+  setText('hb-avg',   avg ? avg + ' BPM' : '—');
 }
 
 // ── TABELLA ───────────────────────────────────────────────────────────────────
@@ -74,22 +74,22 @@ function renderTable() {
   }
 
   tbody.innerHTML = readings.map(hb => {
-    const bpm = hb.bpm ?? '?';
-    const v   = Number(bpm);
+    const v = Number(hb.bpm);
 
-    let badge = '<span class="badge badge-green">✓ Normale</span>';
-    if (hb.irregolare && v > 100)
-      badge = '<span class="badge badge-red">⚠ Tachicardia + Irregolare</span>';
-    else if (hb.irregolare)
-      badge = '<span class="badge badge-yellow">⚡ Irregolare</span>';
-    else if (v > 100)
-      badge = '<span class="badge badge-red">⬆ Tachicardia</span>';
-    else if (v < 50)
-      badge = '<span class="badge badge-yellow">⬇ Bradicardia</span>';
+    let badge;
+    if (hb.irregolare && v > 100) badge = '<span class="badge badge-red">⚠ Tachicardia + Irregolare</span>';
+    else if (hb.irregolare)       badge = '<span class="badge badge-yellow">⚡ Irregolare</span>';
+    else if (v > 100)             badge = '<span class="badge badge-red">⬆ Tachicardia</span>';
+    else if (v < 50)              badge = '<span class="badge badge-yellow">⬇ Bradicardia</span>';
+    else                          badge = '<span class="badge badge-green">✓ Normale</span>';
+
+    const rowBg = (v > 100 || hb.irregolare)
+      ? 'background:rgba(255,61,107,.04)'
+      : v < 50 ? 'background:rgba(255,194,52,.04)' : '';
 
     return `
-      <tr style="${v > 100 || hb.irregolare ? 'background:rgba(255,61,107,.04)' : v < 50 ? 'background:rgba(255,194,52,.04)' : ''}">
-        <td class="mono ${bpmClass(bpm)}" style="font-size:18px;font-weight:600">${bpm}</td>
+      <tr style="${rowBg}">
+        <td class="mono ${bpmClass(hb.bpm)}" style="font-size:18px;font-weight:600">${hb.bpm ?? '?'}</td>
         <td>${badge}</td>
         <td class="mono" style="color:var(--text-sub);font-size:12px">${formatTimestamp(hb.timestamp)}</td>
         <td class="mono" style="color:var(--text-dim);font-size:11px">#${hb.id ?? '—'}</td>
