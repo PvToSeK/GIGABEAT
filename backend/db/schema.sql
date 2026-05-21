@@ -1,48 +1,76 @@
-DROP DATABASE if exists GIGABEAT;
-CREATE DATABASE if not exists GIGABEAT;
-USE GIGABEAT;
-CREATE TABLE Paziente(
-	cf_paziente varchar(16) PRIMARY KEY,
-    nome varchar(100) NOT NULL,
-    cognome varchar(100) NOT NULL,
-    citta varchar(100) NOT NULL,
-    data_nascita date NOT NULL,
-    telefono varchar(10),
-    contatto_emergenza varchar(10)
+CREATE DATABASE IF NOT EXISTS railway;
+USE railway;
+
+-- =========================
+-- TABLE: Paziente
+-- =========================
+CREATE TABLE Paziente (
+    cf_paziente VARCHAR(16) PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    cognome VARCHAR(100) NOT NULL,
+    citta VARCHAR(100) NOT NULL,
+    data_nascita DATE NOT NULL,
+    telefono VARCHAR(20),
+    contatto_emergenza VARCHAR(20)
 );
-CREATE TABLE Sensore(
-	id_sensore int PRIMARY KEY,
-    cf_paziente varchar(16) NOT NULL,
-    
+
+-- =========================
+-- TABLE: Sensore
+-- =========================
+CREATE TABLE Sensore (
+    id_sensore INT PRIMARY KEY,
+    cf_paziente VARCHAR(16) NOT NULL,
     FOREIGN KEY (cf_paziente) REFERENCES Paziente(cf_paziente)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
-CREATE TABLE Battito(
-	id_battito int PRIMARY KEY,
-    id_sensore int NOT NULL,
-    bpm int NOT NULL,
-    timestamp datetime NOT NULL,
-    irregolare boolean,
-    
+
+-- =========================
+-- TABLE: Battito
+-- =========================
+CREATE TABLE Battito (
+    id_battito INT AUTO_INCREMENT PRIMARY KEY,
+    id_sensore INT NOT NULL,
+    bpm INT NOT NULL,
+    `timestamp` DATETIME NOT NULL,
+    irregolare BOOLEAN DEFAULT FALSE,
+
     FOREIGN KEY (id_sensore) REFERENCES Sensore(id_sensore)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
-CREATE TABLE Posizione(
-	id_posizione int PRIMARY KEY,
-    cf_paziente varchar(16) NOT NULL,
-    latitudine decimal(9, 6) NOT NULL,
-    longitudine decimal(9, 6) NOT NULL,
-    data_ora datetime NOT NULL,
-    
+
+-- =========================
+-- TABLE: Posizione
+-- =========================
+CREATE TABLE Posizione (
+    id_posizione INT AUTO_INCREMENT PRIMARY KEY,
+    cf_paziente VARCHAR(16) NOT NULL,
+    latitudine DECIMAL(9,6) NOT NULL,
+    longitudine DECIMAL(9,6) NOT NULL,
+    data_ora DATETIME NOT NULL,
+
     FOREIGN KEY (cf_paziente) REFERENCES Paziente(cf_paziente)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
-CREATE TABLE Emergenze(
-	id_emergenza int PRIMARY KEY,
-    cf_paziente varchar(16) NOT NULL,
-    id_misurazione int NOT NULL,
-    data_ora datetime,
-    id_battito int NOT NULL,
-    
-    FOREIGN KEY (cf_paziente) REFERENCES Paziente(cf_paziente),
+
+-- =========================
+-- TABLE: Emergenze
+-- =========================
+CREATE TABLE Emergenze (
+    id_emergenza INT AUTO_INCREMENT PRIMARY KEY,
+    cf_paziente VARCHAR(16) NOT NULL,
+    data_ora DATETIME NOT NULL,
+    id_battito INT NOT NULL,
+
+    FOREIGN KEY (cf_paziente) REFERENCES Paziente(cf_paziente)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
     FOREIGN KEY (id_battito) REFERENCES Battito(id_battito)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 -- Inserimento Pazienti
 INSERT INTO Paziente (cf_paziente, nome, cognome, citta, data_nascita, telefono, contatto_emergenza) VALUES
