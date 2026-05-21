@@ -1,9 +1,7 @@
 CREATE DATABASE IF NOT EXISTS railway;
 USE railway;
 
--- =========================
 -- TABLE: Paziente
--- =========================
 CREATE TABLE Paziente (
     cf_paziente VARCHAR(16) PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -14,9 +12,7 @@ CREATE TABLE Paziente (
     contatto_emergenza VARCHAR(20)
 );
 
--- =========================
 -- TABLE: Sensore
--- =========================
 CREATE TABLE Sensore (
     id_sensore INT PRIMARY KEY,
     cf_paziente VARCHAR(16) NOT NULL,
@@ -25,9 +21,7 @@ CREATE TABLE Sensore (
         ON UPDATE CASCADE
 );
 
--- =========================
 -- TABLE: Battito
--- =========================
 CREATE TABLE Battito (
     id_battito INT AUTO_INCREMENT PRIMARY KEY,
     id_sensore INT NOT NULL,
@@ -40,9 +34,7 @@ CREATE TABLE Battito (
         ON UPDATE CASCADE
 );
 
--- =========================
 -- TABLE: Posizione
--- =========================
 CREATE TABLE Posizione (
     id_posizione INT AUTO_INCREMENT PRIMARY KEY,
     cf_paziente VARCHAR(16) NOT NULL,
@@ -55,9 +47,7 @@ CREATE TABLE Posizione (
         ON UPDATE CASCADE
 );
 
--- =========================
 -- TABLE: Emergenze
--- =========================
 CREATE TABLE Emergenze (
     id_emergenza INT AUTO_INCREMENT PRIMARY KEY,
     cf_paziente VARCHAR(16) NOT NULL,
