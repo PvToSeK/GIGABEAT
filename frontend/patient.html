@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GigaBeat — Dettaglio Paziente</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <header class="topbar">
+    <div class="topbar-logo"><span class="pulse-dot"></span>GIGABEAT</div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-time" id="clock">—</div>
+  </header>
+
+  <nav class="sidebar">
+    <span class="nav-section-label">Monitoraggio</span>
+    <a class="nav-link" href="index.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-link" href="heartbeat.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Monitor Battito
+    </a>
+    <span class="nav-section-label">Pazienti</span>
+    <a class="nav-link active" href="patients.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Lista Pazienti
+    </a>
+    <a class="nav-link" href="emergency.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+      Emergenze
+    </a>
+    <a class="nav-link" href="map.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/></svg>
+      Posizione GPS
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <!-- BACK -->
+    <div style="margin-bottom:20px">
+      <a href="patients.html" style="color:var(--text-sub);font-size:13px;display:inline-flex;align-items:center;gap:6px">
+        ← Torna alla lista pazienti
+      </a>
+    </div>
+
+    <!-- HEADER -->
+    <div class="page-header" id="patient-header">
+      <h1 id="patient-name">Caricamento...</h1>
+      <p id="patient-cf" style="font-family:var(--mono);color:var(--text-sub)">—</p>
+    </div>
+
+    <!-- CONTENT -->
+    <div id="patient-content">
+      <div class="loader"><div class="spinner"></div>Caricamento dati paziente...</div>
+    </div>
+
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  startClock(document.getElementById('clock'));
+
+  const params = new URLSearchParams(location.search);
+  const cf = params.get('cf');
+
+  if (!cf) {
+    document.getElementById('patient-content').innerHTML =
+      `<div class="error-box">⚠ Nessun Codice Fiscale specificato nell'URL. Usa <code>patient.html?cf=XXXXX</code></div>`;
+    return;
+  }
+
+  document.getElementById('patient-cf').textContent = cf;
+  loadPatient(cf);
+});
+
+async function loadPatient(cf) {
+  const content = document.getElementById('patient-content');
+
+  try {
+    const data = await API.patients.byCF(cf);
+
+    // Adatta i campi al JSON reale
+    const nome    = data.nome    ?? data.name    ?? '—';
+    const cognome = data.cognome ?? data.surname  ?? '';
+    const eta     = data.eta     ?? data.age      ?? '—';
+    const sesso   = data.sesso   ?? data.gender   ?? '—';
+    const cf_val  = data.cf      ?? data.codice_fiscale ?? cf;
+    const stato   = data.stato   ?? data.status   ?? 'Normale';
+    const email   = data.email   ?? '—';
+    const tel     = data.telefono ?? data.phone   ?? '—';
+    const medico  = data.medico  ?? data.doctor   ?? '—';
+    const diagnosi= data.diagnosi ?? data.diagnosis ?? '—';
+
+    document.getElementById('patient-name').textContent = cognome ? `${nome} ${cognome}` : nome;
+
+    // Costruisci UI
+    content.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" class="fade-in">
+
+        <!-- DATI ANAGRAFICI -->
+        <div class="card">
+          <div class="card-title">Dati Anagrafici</div>
+          <div class="detail-grid">
+            <div class="detail-row">
+              <div class="detail-key">Codice Fiscale</div>
+              <div class="detail-val mono">${cf_val}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-key">Nome</div>
+              <div class="detail-val">${cognome ? nome + ' ' + cognome : nome}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-key">Età</div>
+              <div class="detail-val">${eta} anni</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-key">Sesso</div>
+              <div class="detail-val">${sesso}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-key">Email</div>
+              <div class="detail-val mono">${email}</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-key">Telefono</div>
+              <div class="detail-val mono">${tel}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STATO SALUTE -->
+        <div class="card">
+          <div class="card-title">Stato Clinico</div>
+          <div class="detail-grid">
+            <div class="detail-row">
+              <div class="detail-key">Stato attuale</div>
+              <div class="detail-val" id="status-badge-cell"></div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-key">Medico</div>
+              <div class="detail-val">${medico}</div>
+            </div>
+            <div class="detail-row" style="grid-column: 1 / -1">
+              <div class="detail-key">Diagnosi</div>
+              <div class="detail-val">${diagnosi}</div>
+            </div>
+          </div>
+          <div style="margin-top:16px">
+            <a href="map.html?cf=${encodeURIComponent(cf)}" class="btn" style="display:inline-block;margin-right:8px">
+              📍 Vedi posizione
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ULTIMI BATTITI -->
+      <div class="card" style="margin-top:20px">
+        <div class="card-title">
+          Ultimi Battiti Registrati
+          <span class="refresh-tag" style="margin-left:auto">
+            <span class="refresh-dot"></span> live
+          </span>
+        </div>
+        <div class="table-wrap" style="border-radius:8px">
+          <table>
+            <thead>
+              <tr>
+                <th>BPM</th>
+                <th>Stato</th>
+                <th>Timestamp</th>
+                <th>Note</th>
+              </tr>
+            </thead>
+            <tbody id="patient-hb-body">
+              <tr><td colspan="4"><div class="loader"><div class="spinner"></div>Caricamento battiti...</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    // Status badge
+    const sbCell = document.getElementById('status-badge-cell');
+    if (sbCell) {
+      const s = String(stato).toLowerCase();
+      if (s.includes('critico')) sbCell.innerHTML = `<span class="badge badge-red">🔴 ${stato}</span>`;
+      else if (s.includes('osservaz') || s.includes('attenz')) sbCell.innerHTML = `<span class="badge badge-yellow">🟡 ${stato}</span>`;
+      else sbCell.innerHTML = `<span class="badge badge-green">🟢 ${stato}</span>`;
+    }
+
+    // Carica battiti per questo paziente
+    loadPatientHeartbeats(cf);
+
+  } catch (e) {
+    content.innerHTML = `<div class="error-box">⚠ Errore caricamento paziente: ${e.message}</div>`;
+  }
+}
+
+async function loadPatientHeartbeats(cf) {
+  const tbody = document.getElementById('patient-hb-body');
+  if (!tbody) return;
+
+  try {
+    // Usa l'endpoint per paziente se esiste, altrimenti filtra da /all
+    let list;
+    try {
+      const data = await API.heartbeat.byPatient(cf);
+      list = Array.isArray(data) ? data : (data.heartbeats ?? data.data ?? []);
+    } catch {
+      // Fallback: filtra da /heartbeat/all
+      const all = await API.heartbeat.all();
+      const allList = Array.isArray(all) ? all : (all.heartbeats ?? all.data ?? []);
+      list = allList.filter(h => (h.cf ?? h.codice_fiscale ?? h.patientId) === cf);
+    }
+
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="icon">💓</div>Nessun battito registrato per questo paziente</div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = list.slice(0, 20).map(h => {
+      const bpm  = h.bpm ?? h.heartRate ?? h.heart_rate ?? '?';
+      const ts   = h.timestamp ?? h.created_at ?? h.time;
+      const note = h.note ?? h.notes ?? '—';
+      const v = Number(bpm);
+      let badge = '';
+      if (v > 100) badge = `<span class="badge badge-red">⬆ TACHICARDIA</span>`;
+      else if (v < 50) badge = `<span class="badge badge-yellow">⬇ BRADICARDIA</span>`;
+      else badge = `<span class="badge badge-green">✓ NORMALE</span>`;
+
+      return `
+        <tr style="${v > 100 ? 'background:rgba(255,61,107,.04)' : v < 50 ? 'background:rgba(255,194,52,.04)' : ''}">
+          <td class="mono ${bpmClass(bpm)}" style="font-size:18px;font-weight:600">${bpm}</td>
+          <td>${badge}</td>
+          <td class="mono" style="color:var(--text-sub);font-size:12px">${formatTimestamp(ts)}</td>
+          <td style="color:var(--text-sub);font-size:13px">${note}</td>
+        </tr>`;
+    }).join('');
+
+  } catch (e) {
+    if (tbody) tbody.innerHTML = `<tr><td colspan="4"><div class="error-box">⚠ ${e.message}</div></td></tr>`;
+  }
+}
+</script>
+</body>
+</html>

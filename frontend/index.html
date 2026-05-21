@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GigaBeat — Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="layout">
+
+  <header class="topbar">
+    <div class="topbar-logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+      GigaBeat
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-time" id="clock">—</div>
+  </header>
+
+  <nav class="sidebar">
+    <span class="nav-section-label">Monitoraggio</span>
+    <a class="nav-link active" href="index.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+      Dashboard
+    </a>
+    <a class="nav-link" href="heartbeat.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+      Storico Battiti
+    </a>
+  </nav>
+
+  <main class="main">
+
+    <div class="page-header">
+      <h1>Dashboard</h1>
+      <p>
+        Monitoraggio cardiaco in tempo reale
+        <span class="refresh-tag">
+          <span class="refresh-dot"></span>
+          Aggiornato alle <span id="last-refresh">—</span>
+        </span>
+      </p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card" id="card-bpm">
+        <div class="stat-label">BPM Attuale</div>
+        <div class="stat-value" id="stat-bpm">—</div>
+        <div class="stat-meta" id="stat-sensor">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Stato</div>
+        <div style="margin-top:10px" id="stat-status">
+          <span class="badge badge-blue">In attesa...</span>
+        </div>
+        <div class="stat-meta" style="margin-top:8px">
+          <span id="stat-time" style="font-family:var(--mono);font-size:11px">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        Andamento BPM
+        <span class="refresh-tag" style="margin-left:auto;font-size:11px">
+          <span class="refresh-dot"></span> live · ultimi 30 campioni
+        </span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="bpm-chart"></canvas>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

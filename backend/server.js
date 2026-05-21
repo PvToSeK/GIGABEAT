@@ -5,6 +5,7 @@ const cors = require('cors');
 
 const heartRateRouter = require('./routes/heartRate.routers');
 const patientRouter = require('./routes/patient.routers');
+
 const app = express();
 
 app.use(cors());
@@ -16,7 +17,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// ROOT
+// ROOT (solo test API)
 app.get("/", (req, res) => {
     res.send("GIGABEAT backend online 🚀");
 });
@@ -26,12 +27,12 @@ app.get("/ping", (req, res) => {
     res.json({ ok: true });
 });
 
-// 🔥 ROUTES HEARTBEAT (QUESTA È LA CHIAVE)
+// API
 app.use('/api/heartbeat', heartRateRouter);
-// 🔥 ROUTES PAZIENTI (QUESTA È LA CHIAVE)
 app.use('/api/patients', patientRouter);
-// PORT RAILWAY
-const PORT = process.env.PORT;
+
+// START
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log("Server running on", PORT);
