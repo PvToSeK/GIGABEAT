@@ -68,7 +68,7 @@ function setInactive() {
     : '—';
 
   const statusEl = document.getElementById('stat-status');
-  if (statusEl) statusEl.innerHTML = '<span class="badge badge-inactive">⊘ INATTIVO</span>';
+  if (statusEl) statusEl.innerHTML = '<span class="badge badge-inactive">INATTIVO</span>';
 
   const card = document.getElementById('card-bpm');
   if (card) { card.classList.remove('danger', 'warn', 'success'); card.classList.add('inactive'); }
@@ -92,11 +92,11 @@ function updateStats(hb) {
 
   const statusEl = document.getElementById('stat-status');
   if (statusEl) {
-    if (hb.irregolare && v > 100) statusEl.innerHTML = '<span class="badge badge-red">⚡ TACHICARDIA IRREGOLARE</span>';
-    else if (hb.irregolare)       statusEl.innerHTML = '<span class="badge badge-yellow">⚡ IRREGOLARE</span>';
-    else if (v > 100)             statusEl.innerHTML = '<span class="badge badge-red">⬆ TACHICARDICO</span>';
-    else if (v < 50)              statusEl.innerHTML = '<span class="badge badge-yellow">⬇ BRADICARDICO</span>';
-    else                          statusEl.innerHTML = '<span class="badge badge-green">✓ NORMALE</span>';
+    if (hb.irregolare && v > 100) statusEl.innerHTML = '<span class="badge badge-red">TACHICARDIA IRREGOLARE</span>';
+    else if (hb.irregolare)       statusEl.innerHTML = '<span class="badge badge-yellow">IRREGOLARE</span>';
+    else if (v > 100)             statusEl.innerHTML = '<span class="badge badge-red">TACHICARDICO</span>';
+    else if (v < 50)              statusEl.innerHTML = '<span class="badge badge-yellow">BRADICARDICO</span>';
+    else                          statusEl.innerHTML = '<span class="badge badge-green">NORMALE</span>';
   }
 
   const card = document.getElementById('card-bpm');
