@@ -58,7 +58,7 @@ function renderSensorStatus(inactive) {
   if (inactive) {
     el.innerHTML = `
       <div class="alert-banner danger">
-        <span class="alert-icon"></span>
+        
         <div>
           <strong>Segnale assente</strong> — nessun aggiornamento dal sensore
           ${lastSeenAt ? `<span style="font-size:12px;opacity:.8"> · Ultimo: ${formatTimestamp(lastSeenAt.toISOString())}</span>` : ''}
@@ -67,7 +67,7 @@ function renderSensorStatus(inactive) {
   } else {
     el.innerHTML = `
       <div class="alert-banner info" style="padding:9px 14px">
-        <span class="alert-icon">✓</span>
+        
         <span>Sensore attivo</span>
         <span class="refresh-tag" style="margin-left:auto">
           <span class="refresh-dot"></span> segnale ricevuto
@@ -102,7 +102,6 @@ function renderTable() {
     tbody.innerHTML = `
       <tr><td colspan="4">
         <div class="empty-state">
-          <div class="icon">💓</div>
           In attesa del primo battito...
         </div>
       </td></tr>`;

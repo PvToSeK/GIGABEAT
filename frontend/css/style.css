@@ -406,7 +406,6 @@ canvas { max-width: 100%; }
 .alert-banner.danger { background: var(--red-light);    border: 1px solid #f5c0bc; color: var(--red); }
 .alert-banner.warn   { background: var(--yellow-light); border: 1px solid #f5dfa0; color: var(--yellow); }
 .alert-banner.info   { background: var(--blue-light);   border: 1px solid var(--blue-mid); color: var(--blue); }
-.alert-icon { font-size: 16px; margin-top: 1px; }
 
 /* ─── DIVIDER ────────────────────────────────────────────────────────────────── */
 .divider {
