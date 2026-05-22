@@ -1,12 +1,11 @@
 // ─── heartbeat.js ─────────────────────────────────────────────────────────────
-// Accumula battiti in memoria pollingando /latest ogni 2s.
-// Aggiunge un nuovo record solo quando id_battito cambia.
+const REFRESH_MS    = 2000;
+const MAX_RECORDS   = 100;
+const INACTIVITY_MS = 10000; // 10s senza aggiornamenti → INATTIVO
 
-const REFRESH_MS  = 2000;
-const MAX_RECORDS = 100;
-
-let readings = [];
-let lastId   = null;
+let readings    = [];
+let lastId      = null;
+let lastSeenAt  = null; // Date dell'ultimo battito con timestamp valido
 
 document.addEventListener('DOMContentLoaded', () => {
   startClock(document.getElementById('clock'));
@@ -16,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── POLLING ───────────────────────────────────────────────────────────────────
 async function tick() {
-  // Aggiorna SEMPRE il timestamp — fuori dal try, fuori da qualsiasi guard
   const lastEl = document.getElementById('last-refresh');
   if (lastEl) lastEl.textContent = new Date().toLocaleTimeString('it-IT');
 
@@ -24,19 +22,57 @@ async function tick() {
     const raw = await API.heartbeat.latest();
     const hb  = normalizeHeartbeat(raw);
 
-    // Battito già registrato → nessuna nuova riga, ma il clock ha già aggiornato
-    if (hb.id !== null && hb.id === lastId) return;
-    lastId = hb.id;
+    // Aggiorna lastSeenAt se il timestamp del battito è più recente
+    if (hb.timestamp) {
+      const ts = new Date(hb.timestamp);
+      if (!lastSeenAt || ts > lastSeenAt) {
+        lastSeenAt = ts;
+      }
+    }
 
-    readings.unshift(hb);                          // più recente in cima
-    if (readings.length > MAX_RECORDS) readings.pop();
+    const inactive = lastSeenAt && (Date.now() - lastSeenAt.getTime() > INACTIVITY_MS);
 
-    renderSummary();
-    renderTable();
+    // Aggiorna banner stato sensore
+    renderSensorStatus(inactive);
+
+    // Aggiunge riga solo se battito nuovo e sensore attivo
+    if (!inactive && hb.id !== null && hb.id !== lastId) {
+      lastId = hb.id;
+      readings.unshift(hb);
+      if (readings.length > MAX_RECORDS) readings.pop();
+      renderSummary();
+      renderTable();
+    }
 
   } catch (e) {
-    const errEl = document.getElementById('hb-error');
-    renderError(errEl, e.message);
+    renderSensorStatus(true);
+    renderError(document.getElementById('hb-error'), e.message);
+  }
+}
+
+// ── BANNER STATO SENSORE ──────────────────────────────────────────────────────
+function renderSensorStatus(inactive) {
+  const el = document.getElementById('sensor-status');
+  if (!el) return;
+
+  if (inactive) {
+    el.innerHTML = `
+      <div class="alert-banner danger">
+        <span class="alert-icon">⊘</span>
+        <div>
+          <strong>Segnale assente</strong> — nessun aggiornamento dal sensore
+          ${lastSeenAt ? `<span style="font-size:12px;opacity:.8"> · Ultimo: ${formatTimestamp(lastSeenAt.toISOString())}</span>` : ''}
+        </div>
+      </div>`;
+  } else {
+    el.innerHTML = `
+      <div class="alert-banner info" style="padding:9px 14px">
+        <span class="alert-icon">✓</span>
+        <span>Sensore attivo</span>
+        <span class="refresh-tag" style="margin-left:auto">
+          <span class="refresh-dot"></span> segnale ricevuto
+        </span>
+      </div>`;
   }
 }
 
@@ -84,8 +120,8 @@ function renderTable() {
     else                          badge = '<span class="badge badge-green">✓ Normale</span>';
 
     const rowBg = (v > 100 || hb.irregolare)
-      ? 'background:rgba(255,61,107,.04)'
-      : v < 50 ? 'background:rgba(255,194,52,.04)' : '';
+      ? 'background:#fff5f5'
+      : v < 50 ? 'background:#fffbf0' : '';
 
     return `
       <tr style="${rowBg}">

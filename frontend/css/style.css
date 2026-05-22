@@ -415,7 +415,14 @@ canvas { max-width: 100%; }
   margin: 16px 0;
 }
 
-/* ─── KEYFRAMES ──────────────────────────────────────────────────────────────── */
+/* ─── STATO INATTIVO ─────────────────────────────────────────────────────────── */
+.badge-inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+.stat-card.inactive::before { background: #9ca3af; }
+.stat-card.inactive .stat-value { color: #9ca3af; }
 @keyframes spin  { to { transform: rotate(360deg); } }
 @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .2; } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
