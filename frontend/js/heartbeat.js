@@ -58,7 +58,7 @@ function renderSensorStatus(inactive) {
   if (inactive) {
     el.innerHTML = `
       <div class="alert-banner danger">
-        <span class="alert-icon">⊘</span>
+        <span class="alert-icon"></span>
         <div>
           <strong>Segnale assente</strong> — nessun aggiornamento dal sensore
           ${lastSeenAt ? `<span style="font-size:12px;opacity:.8"> · Ultimo: ${formatTimestamp(lastSeenAt.toISOString())}</span>` : ''}
@@ -113,16 +113,16 @@ function renderTable() {
     const v = Number(hb.bpm);
 
     let badge;
-    if (hb.irregolare && v > 100) badge = '<span class="badge badge-red">⚠ Tachicardia + Irregolare</span>';
-    else if (hb.irregolare)       badge = '<span class="badge badge-yellow">⚡ Irregolare</span>';
-    else if (v > 100)             badge = '<span class="badge badge-red">⬆ Tachicardia</span>';
-    else if (v < 50)              badge = '<span class="badge badge-yellow">⬇ Bradicardia</span>';
-    else                          badge = '<span class="badge badge-green">✓ Normale</span>';
+    if (hb.irregolare && v > 100) badge = '<span class="badge badge-red">Tachicardia + Irregolare</span>';
+    else if (hb.irregolare)       badge = '<span class="badge badge-yellow">Irregolare</span>';
+    else if (v > 100)             badge = '<span class="badge badge-red">Tachicardia</span>';
+    else if (v < 50)              badge = '<span class="badge badge-yellow">Bradicardia</span>';
+    else                          badge = '<span class="badge badge-green">Normale</span>';
 
     const rowBg = (v > 100 || hb.irregolare)
       ? 'background:#fff5f5'
       : v < 50 ? 'background:#fffbf0' : '';
-
+ 
     return `
       <tr style="${rowBg}">
         <td class="mono ${bpmClass(hb.bpm)}" style="font-size:18px;font-weight:600">${hb.bpm ?? '?'}</td>
