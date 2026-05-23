@@ -121,16 +121,6 @@
     </nav>
   </div>
 
-  <script>
-    const overlay = document.getElementById('drawer-overlay');
-    const drawer  = document.getElementById('drawer');
-    const openBtn = document.getElementById('hamburger-btn');
-    const closeBtn= document.getElementById('drawer-close');
-    const openDrawer  = () => { drawer.classList.add('open'); overlay.classList.add('open'); };
-    const closeDrawer = () => { drawer.classList.remove('open'); overlay.classList.remove('open'); };
-    openBtn.addEventListener('click', openDrawer);
-    closeBtn.addEventListener('click', closeDrawer);
-    overlay.addEventListener('click', closeDrawer);
-  </script>
+  <script src="js/drawer.js"></script>
 </body>
 </html>
