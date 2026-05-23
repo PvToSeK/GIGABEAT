@@ -375,6 +375,11 @@ tbody td { padding: 11px 16px; color: var(--text); vertical-align: middle; }
   background: var(--green);
   border-radius: 50%;
   animation: blink 2s ease-in-out infinite;
+  transition: background .3s ease;
+}
+.refresh-dot.dot-inactive {
+  background: #9ca3af;
+  animation: none;
 }
 
 /* ─── CHART ──────────────────────────────────────────────────────────────────── */
@@ -406,7 +411,6 @@ canvas { max-width: 100%; }
 .alert-banner.danger { background: var(--red-light);    border: 1px solid #f5c0bc; color: var(--red); }
 .alert-banner.warn   { background: var(--yellow-light); border: 1px solid #f5dfa0; color: var(--yellow); }
 .alert-banner.info   { background: var(--blue-light);   border: 1px solid var(--blue-mid); color: var(--blue); }
-.alert-icon { font-size: 16px; margin-top: 1px; }
 
 /* ─── DIVIDER ────────────────────────────────────────────────────────────────── */
 .divider {
@@ -415,7 +419,14 @@ canvas { max-width: 100%; }
   margin: 16px 0;
 }
 
-/* ─── KEYFRAMES ──────────────────────────────────────────────────────────────── */
+/* ─── STATO INATTIVO ─────────────────────────────────────────────────────────── */
+.badge-inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+}
+.stat-card.inactive::before { background: #9ca3af; }
+.stat-card.inactive .stat-value { color: #9ca3af; }
 @keyframes spin  { to { transform: rotate(360deg); } }
 @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .2; } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }

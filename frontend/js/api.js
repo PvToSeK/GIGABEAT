@@ -1,4 +1,4 @@
-// ─── api.js — GigaBeat (single-patient edition) ──────────────────────────────
+// ─── api.js - GigaBeat (single-patient edition) ──────────────────────────────
 const BASE_URL = 'https://gigabeat-production.up.railway.app/api';
 
 // Aggiungi header auth qui se necessario, es: { 'Authorization': 'Bearer TOKEN' }
@@ -36,7 +36,7 @@ function normalizeHeartbeat(h) {
 
 // ─── UTILS CONDIVISI ─────────────────────────────────────────────────────────
 function formatTimestamp(ts) {
-  if (!ts) return '—';
+  if (!ts) return '-';
   const d = new Date(ts);
   if (isNaN(d)) return ts;
   return d.toLocaleTimeString('it-IT') + ' ' + d.toLocaleDateString('it-IT');
