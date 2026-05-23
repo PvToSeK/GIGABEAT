@@ -7,6 +7,7 @@ let bpmChart        = null;
 let bpmHistory      = [];
 let lastId          = null;
 let lastSeenAt      = null; // Date dell'ultimo battito ricevuto con timestamp valido
+let initialized     = false; // true dopo il primo tick, evita falsi attivi al reload
 
 document.addEventListener('DOMContentLoaded', () => {
   startClock(document.getElementById('clock'));
@@ -24,15 +25,17 @@ async function tick() {
     const raw = await API.heartbeat.latest();
     const hb  = normalizeHeartbeat(raw);
 
-    // Aggiorna lastSeenAt con l'orario LOCALE di ricezione del nuovo battito.
-    // Non usiamo il timestamp dell'API: il clock dell'hardware potrebbe essere
-    // sfasato rispetto al client, rendendo il confronto con Date.now() inaffidabile.
-    if (hb.id !== null && hb.id !== lastId) {
-      lastSeenAt = new Date(); // ora locale del client al momento della ricezione
+    // Al primo tick registriamo solo l'id di baseline senza attivare il sensore.
+    // Questo evita che al reload la pagina appaia attiva prima di aver
+    // confermato un battito realmente nuovo rispetto alla sessione precedente.
+    if (!initialized) {
+      initialized = true;
+    } else if (hb.id !== null && hb.id !== lastId) {
+      lastSeenAt = new Date();
     }
 
     // Inattivo se non riceviamo un nuovo id_battito da più di INACTIVITY_MS
-    const inactive = lastSeenAt && (Date.now() - lastSeenAt.getTime() > INACTIVITY_MS);
+    const inactive = !lastSeenAt || (Date.now() - lastSeenAt.getTime() > INACTIVITY_MS);
 
     if (inactive) {
       setInactive();

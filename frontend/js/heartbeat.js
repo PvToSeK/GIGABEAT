@@ -6,6 +6,7 @@ const INACTIVITY_MS = 10000; // 10s senza aggiornamenti → INATTIVO
 let readings    = [];
 let lastId      = null;
 let lastSeenAt  = null; // Date dell'ultimo battito con timestamp valido
+let initialized = false; // true dopo il primo tick, evita falsi attivi al reload
 
 document.addEventListener('DOMContentLoaded', () => {
   startClock(document.getElementById('clock'));
@@ -22,14 +23,16 @@ async function tick() {
     const raw = await API.heartbeat.latest();
     const hb  = normalizeHeartbeat(raw);
 
-    // Aggiorna lastSeenAt con l'orario LOCALE di ricezione del nuovo battito.
-    // Non usiamo il timestamp dell'API per evitare problemi di fuso orario
-    // o clock dell'hardware sfasato rispetto al client.
-    if (hb.id !== null && hb.id !== lastId) {
+    // Al primo tick registriamo solo l'id di baseline senza attivare il sensore.
+    // Questo evita che al reload la pagina appaia attiva prima di aver
+    // confermato un battito realmente nuovo rispetto alla sessione precedente.
+    if (!initialized) {
+      initialized = true;
+    } else if (hb.id !== null && hb.id !== lastId) {
       lastSeenAt = new Date();
     }
 
-    const inactive = lastSeenAt && (Date.now() - lastSeenAt.getTime() > INACTIVITY_MS);
+    const inactive = !lastSeenAt || (Date.now() - lastSeenAt.getTime() > INACTIVITY_MS);
 
     // Aggiorna banner stato sensore
     renderSensorStatus(inactive);
@@ -57,7 +60,6 @@ function renderSensorStatus(inactive) {
   if (inactive) {
     el.innerHTML = `
       <div class="alert-banner danger">
-        
         <div>
           <strong>Segnale assente</strong> - nessun aggiornamento dal sensore
           ${lastSeenAt ? `<span style="font-size:12px;opacity:.8"> · Ultimo: ${formatTimestamp(lastSeenAt.toISOString())}</span>` : ''}
@@ -66,7 +68,6 @@ function renderSensorStatus(inactive) {
   } else {
     el.innerHTML = `
       <div class="alert-banner info" style="padding:9px 14px">
-        
         <span>Sensore attivo</span>
         <span class="refresh-tag" style="margin-left:auto">
           <span class="refresh-dot"></span> segnale ricevuto
