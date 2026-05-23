@@ -61,8 +61,6 @@ function setInactive() {
   const bpmEl = document.getElementById('stat-bpm');
   if (bpmEl) { bpmEl.textContent = '-'; bpmEl.className = 'stat-value'; }
 
-  const sensorEl = document.getElementById('stat-sensor');
-  if (sensorEl) sensorEl.textContent = 'Segnale assente';
 
   const tsEl = document.getElementById('stat-time');
   if (tsEl) tsEl.textContent = lastSeenAt
@@ -74,6 +72,7 @@ function setInactive() {
 
   const card = document.getElementById('card-bpm');
   if (card) { card.classList.remove('danger', 'warn', 'success'); card.classList.add('inactive'); }
+  document.querySelectorAll('.refresh-dot').forEach(d => d.classList.add('dot-inactive'));
 }
 
 // ── STATO ATTIVO ──────────────────────────────────────────────────────────────
@@ -86,8 +85,6 @@ function updateStats(hb) {
     bpmEl.className   = 'stat-value ' + bpmClass(hb.bpm);
   }
 
-  const sensorEl = document.getElementById('stat-sensor');
-  if (sensorEl) sensorEl.textContent = `Sensore #${hb.id_sensore ?? '?'}`;
 
   const tsEl = document.getElementById('stat-time');
   if (tsEl) tsEl.textContent = formatTimestamp(hb.timestamp);
@@ -107,6 +104,7 @@ function updateStats(hb) {
     if (v > 100 || hb.irregolare) card.classList.add('danger');
     else if (v < 50)              card.classList.add('warn');
   }
+  document.querySelectorAll('.refresh-dot').forEach(d => d.classList.remove('dot-inactive'));
 }
 
 // ── CHART ─────────────────────────────────────────────────────────────────────

@@ -375,6 +375,11 @@ tbody td { padding: 11px 16px; color: var(--text); vertical-align: middle; }
   background: var(--green);
   border-radius: 50%;
   animation: blink 2s ease-in-out infinite;
+  transition: background .3s ease;
+}
+.refresh-dot.dot-inactive {
+  background: #9ca3af;
+  animation: none;
 }
 
 /* ─── CHART ──────────────────────────────────────────────────────────────────── */

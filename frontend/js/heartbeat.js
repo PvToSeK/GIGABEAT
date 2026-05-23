@@ -57,11 +57,13 @@ function renderSensorStatus(inactive) {
   const el = document.getElementById('sensor-status');
   if (!el) return;
 
+  document.querySelectorAll('.refresh-dot').forEach(d => d.classList.toggle('dot-inactive', inactive));
+
   if (inactive) {
     el.innerHTML = `
       <div class="alert-banner danger">
         <div>
-          <strong>Segnale assente</strong> - nessun aggiornamento dal sensore
+          <strong>Segnale assente</strong> - nessun dato disponibile
           ${lastSeenAt ? `<span style="font-size:12px;opacity:.8"> · Ultimo: ${formatTimestamp(lastSeenAt.toISOString())}</span>` : ''}
         </div>
       </div>`;
@@ -100,7 +102,7 @@ function renderTable() {
 
   if (!readings.length) {
     tbody.innerHTML = `
-      <tr><td colspan="4">
+      <tr><td colspan="3">
         <div class="empty-state">
           In attesa del primo battito...
         </div>
@@ -127,7 +129,6 @@ function renderTable() {
         <td class="mono ${bpmClass(hb.bpm)}" style="font-size:18px;font-weight:600">${hb.bpm ?? '?'}</td>
         <td>${badge}</td>
         <td class="mono" style="color:var(--text-sub);font-size:12px">${formatTimestamp(hb.timestamp)}</td>
-        <td class="mono" style="color:var(--text-dim);font-size:11px">#${hb.id ?? '-'}</td>
       </tr>`;
   }).join('');
 }
