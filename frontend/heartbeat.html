@@ -13,12 +13,15 @@
     <div class="topbar-logo">
       GigaBeat
     </div>
+    <button class="hamburger" id="hamburger-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <div class="topbar-spacer"></div>
-    <div class="topbar-time" id="clock">-</div>
+
   </header>
 
   <nav class="sidebar">
-    <span class="nav-section-label">Monitoraggio</span>
+    
     <a class="nav-link" href="index.html">
       Dashboard
     </a>
@@ -103,5 +106,31 @@
 
 <script src="js/api.js"></script>
 <script src="js/heartbeat.js"></script>
+
+  <!-- Overlay + Drawer (mobile) -->
+  <div class="drawer-overlay" id="drawer-overlay"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <span class="drawer-title">GigaBeat</span>
+      <button class="drawer-close" id="drawer-close">&#x2715;</button>
+    </div>
+    <nav class="drawer-nav">
+      
+      <a class="drawer-link" href="index.html">Dashboard</a>
+      <a class="drawer-link active" href="heartbeat.html">Storico Battiti</a>
+    </nav>
+  </div>
+
+  <script>
+    const overlay = document.getElementById('drawer-overlay');
+    const drawer  = document.getElementById('drawer');
+    const openBtn = document.getElementById('hamburger-btn');
+    const closeBtn= document.getElementById('drawer-close');
+    const openDrawer  = () => { drawer.classList.add('open'); overlay.classList.add('open'); };
+    const closeDrawer = () => { drawer.classList.remove('open'); overlay.classList.remove('open'); };
+    openBtn.addEventListener('click', openDrawer);
+    closeBtn.addEventListener('click', closeDrawer);
+    overlay.addEventListener('click', closeDrawer);
+  </script>
 </body>
 </html>
