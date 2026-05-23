@@ -24,15 +24,14 @@ async function tick() {
     const raw = await API.heartbeat.latest();
     const hb  = normalizeHeartbeat(raw);
 
-    // Aggiorna lastSeenAt solo se il timestamp del battito è cambiato
-    if (hb.timestamp) {
-      const ts = new Date(hb.timestamp);
-      if (!lastSeenAt || ts > lastSeenAt) {
-        lastSeenAt = ts;
-      }
+    // Aggiorna lastSeenAt con l'orario LOCALE di ricezione del nuovo battito.
+    // Non usiamo il timestamp dell'API: il clock dell'hardware potrebbe essere
+    // sfasato rispetto al client, rendendo il confronto con Date.now() inaffidabile.
+    if (hb.id !== null && hb.id !== lastId) {
+      lastSeenAt = new Date(); // ora locale del client al momento della ricezione
     }
 
-    // Controlla inattività confrontando il timestamp del sensore con adesso
+    // Inattivo se non riceviamo un nuovo id_battito da più di INACTIVITY_MS
     const inactive = lastSeenAt && (Date.now() - lastSeenAt.getTime() > INACTIVITY_MS);
 
     if (inactive) {
@@ -57,7 +56,7 @@ async function tick() {
 // ── STATO INATTIVO ────────────────────────────────────────────────────────────
 function setInactive() {
   const bpmEl = document.getElementById('stat-bpm');
-  if (bpmEl) { bpmEl.textContent = '—'; bpmEl.className = 'stat-value'; }
+  if (bpmEl) { bpmEl.textContent = '-'; bpmEl.className = 'stat-value'; }
 
   const sensorEl = document.getElementById('stat-sensor');
   if (sensorEl) sensorEl.textContent = 'Segnale assente';
@@ -65,7 +64,7 @@ function setInactive() {
   const tsEl = document.getElementById('stat-time');
   if (tsEl) tsEl.textContent = lastSeenAt
     ? 'Ultimo: ' + formatTimestamp(lastSeenAt.toISOString())
-    : '—';
+    : '-';
 
   const statusEl = document.getElementById('stat-status');
   if (statusEl) statusEl.innerHTML = '<span class="badge badge-inactive">INATTIVO</span>';
@@ -182,7 +181,7 @@ function pushChart(hb) {
   bpmChart.update('none');
 }
 
-// Chiamata quando il sensore diventa inattivo — grigia la linea, nessun punto nuovo
+// Chiamata quando il sensore diventa inattivo - grigia la linea, nessun punto nuovo
 function setChartInactive() {
   if (!bpmChart) return;
   bpmChart.data.datasets[0].borderColor          = 'rgba(156,163,175,1)';

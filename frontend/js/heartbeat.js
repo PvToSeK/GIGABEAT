@@ -22,12 +22,11 @@ async function tick() {
     const raw = await API.heartbeat.latest();
     const hb  = normalizeHeartbeat(raw);
 
-    // Aggiorna lastSeenAt se il timestamp del battito è più recente
-    if (hb.timestamp) {
-      const ts = new Date(hb.timestamp);
-      if (!lastSeenAt || ts > lastSeenAt) {
-        lastSeenAt = ts;
-      }
+    // Aggiorna lastSeenAt con l'orario LOCALE di ricezione del nuovo battito.
+    // Non usiamo il timestamp dell'API per evitare problemi di fuso orario
+    // o clock dell'hardware sfasato rispetto al client.
+    if (hb.id !== null && hb.id !== lastId) {
+      lastSeenAt = new Date();
     }
 
     const inactive = lastSeenAt && (Date.now() - lastSeenAt.getTime() > INACTIVITY_MS);
@@ -60,7 +59,7 @@ function renderSensorStatus(inactive) {
       <div class="alert-banner danger">
         
         <div>
-          <strong>Segnale assente</strong> — nessun aggiornamento dal sensore
+          <strong>Segnale assente</strong> - nessun aggiornamento dal sensore
           ${lastSeenAt ? `<span style="font-size:12px;opacity:.8"> · Ultimo: ${formatTimestamp(lastSeenAt.toISOString())}</span>` : ''}
         </div>
       </div>`;
@@ -90,7 +89,7 @@ function renderSummary() {
   setText('hb-high',  high);
   setText('hb-low',   low);
   setText('hb-irreg', irreg);
-  setText('hb-avg',   avg ? avg + ' BPM' : '—');
+  setText('hb-avg',   avg ? avg + ' BPM' : '-');
 }
 
 // ── TABELLA ───────────────────────────────────────────────────────────────────
@@ -127,7 +126,7 @@ function renderTable() {
         <td class="mono ${bpmClass(hb.bpm)}" style="font-size:18px;font-weight:600">${hb.bpm ?? '?'}</td>
         <td>${badge}</td>
         <td class="mono" style="color:var(--text-sub);font-size:12px">${formatTimestamp(hb.timestamp)}</td>
-        <td class="mono" style="color:var(--text-dim);font-size:11px">#${hb.id ?? '—'}</td>
+        <td class="mono" style="color:var(--text-dim);font-size:11px">#${hb.id ?? '-'}</td>
       </tr>`;
   }).join('');
 }
