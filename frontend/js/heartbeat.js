@@ -1,5 +1,5 @@
 // ─── heartbeat.js ─────────────────────────────────────────────────────────────
-const REFRESH_MS    = 2000;
+const REFRESH_MS    = 1000;
 const MAX_RECORDS   = 100;
 const INACTIVITY_MS = 10000; // 10s senza aggiornamenti → INATTIVO
 
@@ -39,12 +39,15 @@ async function tick() {
 
     // Aggiunge riga solo se battito nuovo e sensore attivo
     if (!inactive && hb.id !== null && hb.id !== lastId) {
-      lastId = hb.id;
       readings.unshift(hb);
       if (readings.length > MAX_RECORDS) readings.pop();
       renderSummary();
       renderTable();
     }
+
+    // Aggiorna lastId sempre, come in dashboard.js,
+    // altrimenti al secondo tick lastId è ancora null e lastSeenAt viene impostato erroneamente
+    lastId = hb.id;
 
   } catch (e) {
     renderSensorStatus(true);

@@ -1,5 +1,5 @@
 // ─── dashboard.js ─────────────────────────────────────────────────────────────
-const REFRESH_MS        = 2000;
+const REFRESH_MS        = 1000;
 const MAX_HISTORY       = 30;
 const INACTIVITY_MS     = 10000; // 10s senza aggiornamenti → INATTIVO
 
