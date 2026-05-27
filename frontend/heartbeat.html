@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GigaBeat — Storico Battiti</title>
+  <title>GigaBeat</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -11,28 +11,21 @@
 
   <header class="topbar">
     <div class="topbar-logo">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-      </svg>
       GigaBeat
     </div>
+    <button class="hamburger" id="hamburger-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <div class="topbar-spacer"></div>
-    <div class="topbar-time" id="clock">—</div>
+
   </header>
 
   <nav class="sidebar">
-    <span class="nav-section-label">Monitoraggio</span>
+    
     <a class="nav-link" href="index.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-      </svg>
       Dashboard
     </a>
     <a class="nav-link active" href="heartbeat.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-      </svg>
       Storico Battiti
     </a>
   </nav>
@@ -45,12 +38,13 @@
         Rilevamenti accumulati dalla sessione corrente
         <span class="refresh-tag">
           <span class="refresh-dot"></span>
-          Aggiornato alle <span id="last-refresh">—</span>
+          Aggiornato alle <span id="last-refresh">-</span>
         </span>
       </p>
     </div>
 
     <div id="hb-error"></div>
+    <div id="sensor-status" style="margin-bottom:14px"></div>
 
     <div class="stats-grid">
       <div class="stat-card">
@@ -60,7 +54,7 @@
       </div>
       <div class="stat-card success">
         <div class="stat-label">Media BPM</div>
-        <div class="stat-value" id="hb-avg">—</div>
+        <div class="stat-value" id="hb-avg">-</div>
       </div>
       <div class="stat-card danger">
         <div class="stat-label">Tachicardie</div>
@@ -79,10 +73,10 @@
     </div>
 
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-      <span class="badge badge-green">✓ Normale</span>
-      <span class="badge badge-red">⬆ Tachicardia &gt; 100</span>
-      <span class="badge badge-yellow">⬇ Bradicardia &lt; 50</span>
-      <span class="badge badge-yellow">⚡ Irregolare</span>
+      <span class="badge badge-green">Normale</span>
+      <span class="badge badge-red">Tachicardia &gt; 100</span>
+      <span class="badge badge-yellow">Bradicardia &lt; 50</span>
+      <span class="badge badge-yellow">Irregolare</span>
     </div>
 
     <div class="table-wrap">
@@ -92,15 +86,14 @@
             <th>BPM</th>
             <th>Stato</th>
             <th>Timestamp</th>
-            <th>ID Battito</th>
           </tr>
         </thead>
         <tbody id="heartbeat-body">
           <tr>
-            <td colspan="4">
+            <td colspan="3">
               <div class="loader">
                 <div class="spinner"></div>
-                In ascolto dal sensore...
+                Caricamento dati in corso...
               </div>
             </td>
           </tr>
@@ -113,5 +106,21 @@
 
 <script src="js/api.js"></script>
 <script src="js/heartbeat.js"></script>
+
+  <!-- Overlay + Drawer (mobile) -->
+  <div class="drawer-overlay" id="drawer-overlay"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <span class="drawer-title">GigaBeat</span>
+      <button class="drawer-close" id="drawer-close">&#x2715;</button>
+    </div>
+    <nav class="drawer-nav">
+      
+      <a class="drawer-link" href="index.html">Dashboard</a>
+      <a class="drawer-link active" href="heartbeat.html">Storico Battiti</a>
+    </nav>
+  </div>
+
+  <script src="js/drawer.js"></script>
 </body>
 </html>

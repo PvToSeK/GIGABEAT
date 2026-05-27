@@ -1,12 +1,12 @@
 // ─── heartbeat.js ─────────────────────────────────────────────────────────────
-// Accumula battiti in memoria pollingando /latest ogni 2s.
-// Aggiunge un nuovo record solo quando id_battito cambia.
+const REFRESH_MS    = 1000;
+const MAX_RECORDS   = 100;
+const INACTIVITY_MS = 10000; // 10s senza aggiornamenti → INATTIVO
 
-const REFRESH_MS  = 2000;
-const MAX_RECORDS = 100;
-
-let readings = [];
-let lastId   = null;
+let readings    = [];
+let lastId      = null;
+let lastSeenAt  = null; // Date dell'ultimo battito con timestamp valido
+let initialized = false; // true dopo il primo tick, evita falsi attivi al reload
 
 document.addEventListener('DOMContentLoaded', () => {
   startClock(document.getElementById('clock'));
@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── POLLING ───────────────────────────────────────────────────────────────────
 async function tick() {
-  // Aggiorna SEMPRE il timestamp — fuori dal try, fuori da qualsiasi guard
   const lastEl = document.getElementById('last-refresh');
   if (lastEl) lastEl.textContent = new Date().toLocaleTimeString('it-IT');
 
@@ -24,19 +23,61 @@ async function tick() {
     const raw = await API.heartbeat.latest();
     const hb  = normalizeHeartbeat(raw);
 
-    // Battito già registrato → nessuna nuova riga, ma il clock ha già aggiornato
-    if (hb.id !== null && hb.id === lastId) return;
+    // Al primo tick registriamo solo l'id di baseline senza attivare il sensore.
+    // Questo evita che al reload la pagina appaia attiva prima di aver
+    // confermato un battito realmente nuovo rispetto alla sessione precedente.
+    if (!initialized) {
+      initialized = true;
+    } else if (hb.id !== null && hb.id !== lastId) {
+      lastSeenAt = new Date();
+    }
+
+    const inactive = !lastSeenAt || (Date.now() - lastSeenAt.getTime() > INACTIVITY_MS);
+
+    // Aggiorna banner stato sensore
+    renderSensorStatus(inactive);
+
+    // Aggiunge riga solo se battito nuovo e sensore attivo
+    if (!inactive && hb.id !== null && hb.id !== lastId) {
+      readings.unshift(hb);
+      if (readings.length > MAX_RECORDS) readings.pop();
+      renderSummary();
+      renderTable();
+    }
+
+    // Aggiorna lastId sempre, come in dashboard.js,
+    // altrimenti al secondo tick lastId è ancora null e lastSeenAt viene impostato erroneamente
     lastId = hb.id;
 
-    readings.unshift(hb);                          // più recente in cima
-    if (readings.length > MAX_RECORDS) readings.pop();
-
-    renderSummary();
-    renderTable();
-
   } catch (e) {
-    const errEl = document.getElementById('hb-error');
-    renderError(errEl, e.message);
+    renderSensorStatus(true);
+    renderError(document.getElementById('hb-error'), e.message);
+  }
+}
+
+// ── BANNER STATO SENSORE ──────────────────────────────────────────────────────
+function renderSensorStatus(inactive) {
+  const el = document.getElementById('sensor-status');
+  if (!el) return;
+
+  document.querySelectorAll('.refresh-dot').forEach(d => d.classList.toggle('dot-inactive', inactive));
+
+  if (inactive) {
+    el.innerHTML = `
+      <div class="alert-banner danger">
+        <div>
+          <strong>Segnale assente</strong> - nessun dato disponibile
+          ${lastSeenAt ? `<span style="font-size:12px;opacity:.8"> · Ultimo: ${formatTimestamp(lastSeenAt.toISOString())}</span>` : ''}
+        </div>
+      </div>`;
+  } else {
+    el.innerHTML = `
+      <div class="alert-banner info" style="padding:9px 14px">
+        <span>Sensore attivo</span>
+        <span class="refresh-tag" style="margin-left:auto">
+          <span class="refresh-dot"></span> segnale ricevuto
+        </span>
+      </div>`;
   }
 }
 
@@ -54,7 +95,7 @@ function renderSummary() {
   setText('hb-high',  high);
   setText('hb-low',   low);
   setText('hb-irreg', irreg);
-  setText('hb-avg',   avg ? avg + ' BPM' : '—');
+  setText('hb-avg',   avg ? avg + ' BPM' : '-');
 }
 
 // ── TABELLA ───────────────────────────────────────────────────────────────────
@@ -64,9 +105,8 @@ function renderTable() {
 
   if (!readings.length) {
     tbody.innerHTML = `
-      <tr><td colspan="4">
+      <tr><td colspan="3">
         <div class="empty-state">
-          <div class="icon">💓</div>
           In attesa del primo battito...
         </div>
       </td></tr>`;
@@ -77,22 +117,21 @@ function renderTable() {
     const v = Number(hb.bpm);
 
     let badge;
-    if (hb.irregolare && v > 100) badge = '<span class="badge badge-red">⚠ Tachicardia + Irregolare</span>';
-    else if (hb.irregolare)       badge = '<span class="badge badge-yellow">⚡ Irregolare</span>';
-    else if (v > 100)             badge = '<span class="badge badge-red">⬆ Tachicardia</span>';
-    else if (v < 50)              badge = '<span class="badge badge-yellow">⬇ Bradicardia</span>';
-    else                          badge = '<span class="badge badge-green">✓ Normale</span>';
+    if (hb.irregolare && v > 100) badge = '<span class="badge badge-red">Tachicardia + Irregolare</span>';
+    else if (hb.irregolare)       badge = '<span class="badge badge-yellow">Irregolare</span>';
+    else if (v > 100)             badge = '<span class="badge badge-red">Tachicardia</span>';
+    else if (v < 50)              badge = '<span class="badge badge-yellow">Bradicardia</span>';
+    else                          badge = '<span class="badge badge-green">Normale</span>';
 
     const rowBg = (v > 100 || hb.irregolare)
-      ? 'background:rgba(255,61,107,.04)'
-      : v < 50 ? 'background:rgba(255,194,52,.04)' : '';
-
+      ? 'background:#fff5f5'
+      : v < 50 ? 'background:#fffbf0' : '';
+ 
     return `
       <tr style="${rowBg}">
         <td class="mono ${bpmClass(hb.bpm)}" style="font-size:18px;font-weight:600">${hb.bpm ?? '?'}</td>
         <td>${badge}</td>
         <td class="mono" style="color:var(--text-sub);font-size:12px">${formatTimestamp(hb.timestamp)}</td>
-        <td class="mono" style="color:var(--text-dim);font-size:11px">#${hb.id ?? '—'}</td>
       </tr>`;
   }).join('');
 }

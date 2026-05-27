@@ -1,10 +1,13 @@
 // ─── dashboard.js ─────────────────────────────────────────────────────────────
-const REFRESH_MS  = 2000;
-const MAX_HISTORY = 30;
+const REFRESH_MS        = 1000;
+const MAX_HISTORY       = 30;
+const INACTIVITY_MS     = 10000; // 10s senza aggiornamenti → INATTIVO
 
-let bpmChart   = null;
-let bpmHistory = [];
-let lastId     = null; // usato solo per il badge "nuovo battito", non per il grafico
+let bpmChart        = null;
+let bpmHistory      = [];
+let lastId          = null;
+let lastSeenAt      = null; // Date dell'ultimo battito ricevuto con timestamp valido
+let initialized     = false; // true dopo il primo tick, evita falsi attivi al reload
 
 document.addEventListener('DOMContentLoaded', () => {
   startClock(document.getElementById('clock'));
@@ -15,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── POLLING ───────────────────────────────────────────────────────────────────
 async function tick() {
-  // Aggiorna SEMPRE il timestamp — prima di qualsiasi await o guard
   const lastEl = document.getElementById('last-refresh');
   if (lastEl) lastEl.textContent = new Date().toLocaleTimeString('it-IT');
 
@@ -23,18 +25,57 @@ async function tick() {
     const raw = await API.heartbeat.latest();
     const hb  = normalizeHeartbeat(raw);
 
-    updateStats(hb);
-    pushChart(hb); // il grafico riceve un punto ad ogni tick, sempre
+    // Al primo tick registriamo solo l'id di baseline senza attivare il sensore.
+    // Questo evita che al reload la pagina appaia attiva prima di aver
+    // confermato un battito realmente nuovo rispetto alla sessione precedente.
+    if (!initialized) {
+      initialized = true;
+    } else if (hb.id !== null && hb.id !== lastId) {
+      lastSeenAt = new Date();
+    }
+
+    // Inattivo se non riceviamo un nuovo id_battito da più di INACTIVITY_MS
+    const inactive = !lastSeenAt || (Date.now() - lastSeenAt.getTime() > INACTIVITY_MS);
+
+    if (inactive) {
+      setInactive();
+      setChartInactive();
+    } else {
+      updateStats(hb);
+      // Aggiorna il grafico solo se è arrivato un battito nuovo
+      if (hb.id !== null && hb.id !== lastId) {
+        pushChart(hb);
+      }
+    }
+
     lastId = hb.id;
 
   } catch (e) {
     console.error('[dashboard/tick]', e.message);
-    const bpmEl = document.getElementById('stat-bpm');
-    if (bpmEl) { bpmEl.textContent = '—'; bpmEl.className = 'stat-value'; }
+    setInactive();
   }
 }
 
-// ── STATS ─────────────────────────────────────────────────────────────────────
+// ── STATO INATTIVO ────────────────────────────────────────────────────────────
+function setInactive() {
+  const bpmEl = document.getElementById('stat-bpm');
+  if (bpmEl) { bpmEl.textContent = '-'; bpmEl.className = 'stat-value'; }
+
+
+  const tsEl = document.getElementById('stat-time');
+  if (tsEl) tsEl.textContent = lastSeenAt
+    ? 'Ultimo: ' + formatTimestamp(lastSeenAt.toISOString())
+    : '-';
+
+  const statusEl = document.getElementById('stat-status');
+  if (statusEl) statusEl.innerHTML = '<span class="badge badge-inactive">INATTIVO</span>';
+
+  const card = document.getElementById('card-bpm');
+  if (card) { card.classList.remove('danger', 'warn', 'success'); card.classList.add('inactive'); }
+  document.querySelectorAll('.refresh-dot').forEach(d => d.classList.add('dot-inactive'));
+}
+
+// ── STATO ATTIVO ──────────────────────────────────────────────────────────────
 function updateStats(hb) {
   const v = Number(hb.bpm);
 
@@ -44,27 +85,26 @@ function updateStats(hb) {
     bpmEl.className   = 'stat-value ' + bpmClass(hb.bpm);
   }
 
-  const sensorEl = document.getElementById('stat-sensor');
-  if (sensorEl) sensorEl.textContent = `Sensore #${hb.id_sensore ?? '?'}`;
 
   const tsEl = document.getElementById('stat-time');
   if (tsEl) tsEl.textContent = formatTimestamp(hb.timestamp);
 
   const statusEl = document.getElementById('stat-status');
   if (statusEl) {
-    if (hb.irregolare && v > 100) statusEl.innerHTML = '<span class="badge badge-red">⚡ TACHICARDIA IRREGOLARE</span>';
-    else if (hb.irregolare)       statusEl.innerHTML = '<span class="badge badge-yellow">⚡ IRREGOLARE</span>';
-    else if (v > 100)             statusEl.innerHTML = '<span class="badge badge-red">⬆ TACHICARDICO</span>';
-    else if (v < 50)              statusEl.innerHTML = '<span class="badge badge-yellow">⬇ BRADICARDICO</span>';
-    else                          statusEl.innerHTML = '<span class="badge badge-green">✓ NORMALE</span>';
+    if (hb.irregolare && v > 100) statusEl.innerHTML = '<span class="badge badge-red">TACHICARDIA IRREGOLARE</span>';
+    else if (hb.irregolare)       statusEl.innerHTML = '<span class="badge badge-yellow">IRREGOLARE</span>';
+    else if (v > 100)             statusEl.innerHTML = '<span class="badge badge-red">TACHICARDICO</span>';
+    else if (v < 50)              statusEl.innerHTML = '<span class="badge badge-yellow">BRADICARDICO</span>';
+    else                          statusEl.innerHTML = '<span class="badge badge-green">NORMALE</span>';
   }
 
   const card = document.getElementById('card-bpm');
   if (card) {
-    card.classList.remove('danger', 'warn');
+    card.classList.remove('danger', 'warn', 'inactive');
     if (v > 100 || hb.irregolare) card.classList.add('danger');
     else if (v < 50)              card.classList.add('warn');
   }
+  document.querySelectorAll('.refresh-dot').forEach(d => d.classList.remove('dot-inactive'));
 }
 
 // ── CHART ─────────────────────────────────────────────────────────────────────
@@ -79,11 +119,11 @@ function initChart() {
       datasets: [{
         label: 'BPM',
         data: [],
-        borderColor: 'rgba(0,229,176,1)',
-        backgroundColor: 'rgba(0,229,176,.07)',
+        borderColor: 'rgba(13,158,110,1)',
+        backgroundColor: 'rgba(13,158,110,.07)',
         borderWidth: 2,
         pointRadius: 3,
-        pointBackgroundColor: 'rgba(0,229,176,1)',
+        pointBackgroundColor: 'rgba(13,158,110,1)',
         tension: .35,
         fill: true,
       }]
@@ -117,8 +157,7 @@ function initChart() {
   });
 }
 
-// pushChart viene chiamata ad ogni tick — nessun guard sull'id.
-// Il grafico deve muoversi continuamente come un monitor ECG.
+// Chiamata solo quando arriva un battito con id nuovo
 function pushChart(hb) {
   if (!bpmChart) return;
 
@@ -132,17 +171,22 @@ function pushChart(hb) {
   bpmChart.data.labels           = bpmHistory.map(p => p.label);
   bpmChart.data.datasets[0].data = bpmHistory.map(p => p.bpm);
 
-  // Colore dinamico in base all'ultimo valore
   const last = bpmHistory[bpmHistory.length - 1].bpm;
-  let lineColor, fillColor;
-  if (last > 100)     { lineColor = 'rgba(255,61,107,1)'; fillColor = 'rgba(255,61,107,.07)'; }
-  else if (last < 50) { lineColor = 'rgba(255,194,52,1)'; fillColor = 'rgba(255,194,52,.07)'; }
-  else                { lineColor = 'rgba(0,229,176,1)';  fillColor = 'rgba(0,229,176,.07)';  }
+  let lineColor = 'rgba(13,158,110,1)', fillColor = 'rgba(13,158,110,.07)';
+  if (last > 100)     { lineColor = 'rgba(217,48,37,1)';  fillColor = 'rgba(217,48,37,.07)'; }
+  else if (last < 50) { lineColor = 'rgba(192,124,0,1)';  fillColor = 'rgba(192,124,0,.07)'; }
 
   bpmChart.data.datasets[0].borderColor          = lineColor;
   bpmChart.data.datasets[0].backgroundColor      = fillColor;
   bpmChart.data.datasets[0].pointBackgroundColor = lineColor;
+  bpmChart.update('none');
+}
 
-  // 'none' evita l'animazione su ogni tick — più fluido a 2s
+// Chiamata quando il sensore diventa inattivo - grigia la linea, nessun punto nuovo
+function setChartInactive() {
+  if (!bpmChart) return;
+  bpmChart.data.datasets[0].borderColor          = 'rgba(156,163,175,1)';
+  bpmChart.data.datasets[0].backgroundColor      = 'rgba(156,163,175,.07)';
+  bpmChart.data.datasets[0].pointBackgroundColor = 'rgba(156,163,175,1)';
   bpmChart.update('none');
 }
